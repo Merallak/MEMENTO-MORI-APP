@@ -1,0 +1,890 @@
+export type Language = "en" | "es";
+
+export const translations = {
+  en: {
+    common: {
+      edit: "Edit",
+      save: "Save",
+      delete: "Delete",
+      cancel: "Cancel",
+      confirm: "Confirm",
+      close: "Close",
+      success: "Success",
+      error: "Error",
+      loading: "Loading...",
+      required: "All fields are required"
+    },
+
+    nav: {
+      market: "Market",
+      issue: "Issue Token",
+      portfolio: "Portfolio",
+      trading: "Trading",
+      payments: "Payments",
+      logout: "Logout",
+      connect: "Log In",
+      github: "GitHub",
+      go_to_app: "Go to App",
+      back_home: "Back to Home"
+    },
+
+    auth: {
+      loginTitle: "Login",
+      signupTitle: "Sign Up",
+      sign_in: "Sign In",
+      sign_up: "Sign Up",
+      email: "Email",
+      password: "Password",
+      confirmPassword: "Confirm Password",
+      fullName: "Full Name",
+      username: "Username",
+      forgotPassword: "Forgot Password?",
+      noAccount: "Don't have an account?",
+      hasAccount: "Already have an account?",
+      title: "Authentication",
+      verify_email_title: "Verify Your Email",
+      verify_email_message: "Please check your email to verify your account before continuing.",
+      reset_title: "Reset Password",
+      reset_desc: "Enter your email to receive a password reset link",
+      reset_success: "Password updated successfully",
+      reset_email_sent: "Reset link sent to your email",
+      signing_in: "Signing in...",
+      signing_up: "Signing up...",
+      sending: "Sending...",
+      send_link: "Send Reset Link",
+      back_to_login: "Back to Login",
+      password_updated: "Password Updated",
+      resetPassword: "Reset Password",
+      updatePassword: "Update Password",
+      newPassword: "New Password",
+      updating: "Updating...",
+      update: "Update Password",
+      invalidSession: "Invalid or expired reset link",
+      redirecting: "Redirecting..."
+    },
+
+    landing: {
+      title: "MEMENTO MORI",
+      subtitle: "Tokenize Your Legacy",
+      tagline: "REMEMBER YOU MUST DIE",
+      description: "Turn your future net worth into tradable tokens today. A marketplace for personal legacy-backed assets.",
+      start_now: "Create Account",
+      cta_primary: "Get Started",
+      cta_secondary: "Learn More",
+      final_cta_subtitle: "Join the future of personal legacy tokenization",
+      how_title: "How It Works",
+      how_subtitle: "Three simple steps to start trading personal tokens",
+      stats: {
+        users: "Active Users",
+        tokens: "Tokens Issued",
+        market_cap: "Total Market Cap"
+      },
+      features: {
+        issue_title: "Issue Tokens",
+        issue_desc: "Create personal tokens backed by your future net worth at the time of death",
+        trade_title: "Trade Freely",
+        trade_desc: "Buy and sell tokens in our open marketplace with dynamic pricing",
+        valuation_title: "Dynamic Valuation",
+        valuation_desc: "Real-time pricing based on market demand and mortality risk assessment",
+        security_title: "Secure & Transparent",
+        security_desc: "Platform verified contracts ensure trust and transparency"
+      },
+      steps: {
+        step1_title: "Create Your Token",
+        step1_desc: "Issue a personal token backed by your net worth at the time of your death",
+        step2_title: "Define Your Terms",
+        step2_desc: "Set supply, valuation, and distribution mechanics",
+        step3_title: "Start Trading",
+        step3_desc: "Buy, sell, and exchange tokens in the open market",
+        step4_title: "Claim Returns",
+        step4_desc: "Token holders receive proportional payouts upon mortality event"
+      }
+    },
+
+    footer: {
+      description: "A marketplace for legacy-backed personal tokens",
+      rights: "All rights reserved",
+      privacy: "Privacy Policy",
+      terms: "Terms of Service",
+      docs: "Documentation"
+    },
+
+    market: {
+      title: "Explore Tokens",
+      search: "Search tokens...",
+      all_tokens: "All Tokens",
+      ticker: "Ticker",
+      issuer: "Issuer",
+      price: "Price",
+      change_24h: "24h Change",
+      market_cap: "Market Cap",
+      supply: "Supply",
+      total_supply: "Total Supply",
+      view_details: "View Details",
+      no_tokens: "No tokens available",
+      loading_market: "Loading market data..."
+    },
+
+    issue: {
+      title: "Issue Your Token",
+      subtitle: "Create a token backed by your net worth",
+      active_token: "Your Active Token",
+      token_name: "Token Name",
+      token_symbol: "Token Symbol",
+      total_supply: "Total Supply",
+      initial_price: "Initial Price (USD)",
+      net_worth: "Estimated Net Worth",
+      distribution: "Distribution Address",
+      create_token: "Create Token",
+      creating: "Creating...",
+      success: "Token created successfully",
+      success_title: "Token Created",
+      success_desc: "Your token {{ticker}} has been successfully created",
+      token_stats: "Token Statistics",
+      current_price: "Current Price",
+      holders: "Holders",
+      edit_token: "Edit Token",
+      delete_token: "Delete Token",
+      token_image: "Token Image",
+      upload_file: "Upload File",
+      paste_url: "Paste URL",
+      image_hint: "Choose an image for your token",
+      description: "Description",
+      description_placeholder: "Tell people about your token...",
+      initial_valuation: "Initial Market Cap",
+      token_name_label: "Token Name",
+      net_worth_label: "Net Worth ($)",
+      total_supply_label: "Total Supply",
+      initial_price_label: "Initial Price ($)"
+    },
+
+    portfolio: {
+      title: "Your Portfolio",
+      total_value: "Total Portfolio Value",
+      tokens: "Your Tokens",
+      token: "Token",
+      amount: "Amount",
+      value: "Value",
+      avg_price: "Avg Price",
+      no_holdings: "No tokens in portfolio",
+      performance: "Performance",
+      holdings: "Holdings",
+      holdings_token: "Token",
+      holdings_amount: "Amount",
+      holdings_value: "Value",
+      holdings_avg_price: "Average Price",
+      balance: "Balance"
+    },
+
+    trading: {
+      title: "Trading",
+      select_token: "Select a token to trade",
+      loading_market: "Loading market data...",
+      market_price: "Market Price",
+      amount: "Amount",
+      price_usd: "Price (USD)",
+      buy_title: "Buy {{ticker}}",
+      sell_title: "Sell {{ticker}}",
+      place_buy_order: "Place Buy Order",
+      place_sell_order: "Place Sell Order",
+      no_active_orders: "No active orders",
+      my_holdings: "Your holdings for {{ticker}}",
+      
+      tabs: {
+        buy: "Buy",
+        sell: "Sell",
+        usd: "USD",
+        swap: "Swap"
+      },
+
+      labels: {
+        token: "Token",
+        amount: "Amount",
+        price: "Price",
+        total: "Total",
+        balance: "Balance",
+        from: "From",
+        to: "To",
+        you_pay: "You Pay",
+        you_receive: "You Receive",
+        slippage: "Slippage Tolerance"
+      },
+
+      buttons: {
+        buy: "Buy",
+        sell: "Sell",
+        swap: "Swap",
+        buying: "Buying...",
+        selling: "Selling...",
+        swapping: "Swapping..."
+      },
+
+      order_book: {
+        title: "Order Book",
+        price: "Price",
+        amount: "Amount",
+        total: "Total",
+        no_orders: "No orders available",
+        fill: "Fill",
+        buy_orders: "Buy Orders",
+        sell_orders: "Sell Orders"
+      },
+
+      history: {
+        title: "Recent Trades",
+        price: "Price",
+        amount: "Amount",
+        time: "Time",
+        no_trades: "No trades recorded yet"
+      },
+
+      holdings: {
+        title: "Your Holdings",
+        for_token: "Your holdings for"
+      },
+
+      success: {
+        buy: "Purchase successful",
+        sell: "Sale successful",
+        swap: "Swap successful"
+      },
+
+      swap: {
+        title: "Swap Tokens",
+        subtitle: "Trade {ticker} for other tokens",
+        want_receive: "I want to receive",
+        pay_with: "I will pay with",
+        token_placeholder: "Select token",
+        no_tokens: "No tokens available",
+        exchange_rate: "Est. Rate",
+        post_offer: "Post Swap Offer",
+        active_offers: "Active Swap Offers",
+        receives: "Receives",
+        pays: "Pays",
+        accept: "Accept Deal",
+        your_offer: "Your Offer",
+        cancel: "Cancel Offer",
+        success_msg: "Swap executed successfully!"
+      }
+    },
+
+    payments: {
+      title: "Payments",
+      request_payment: "Request Payment",
+      scan_pay: "Scan & Pay",
+      token: "Token",
+      amount: "Amount",
+      recipient: "Recipient Address",
+      generate_qr: "Generate QR Code",
+      scan_qr: "Scan QR Code",
+      start_scanning: "Start Scanning",
+      stop_scanning: "Stop Scanning",
+      camera_access: "Camera access required to scan QR codes",
+      confirm_payment: "Confirm Payment",
+      send: "Send",
+      pay: "Pay",
+      processing: "Processing...",
+      success: "Payment successful!",
+      qr_generated: "QR Code generated",
+      scan_to_pay: "Scan this code to receive payment",
+      error_invalid_qr: "Invalid QR code",
+      error_camera: "Camera access denied"
+    },
+
+    orderBook: {
+      buy_orders: "Buy Orders",
+      sell_orders: "Sell Orders",
+      buy: "Buy",
+      sell: "Sell",
+      fill: "Fill",
+      title: "Order Book",
+      price: "Price",
+      amount: "Amount",
+      total: "Total"
+    },
+
+    chatbot: {
+      title: "AI Assistant",
+      placeholder: "Ask me anything about the platform...",
+      send: "Send",
+      sending: "Sending...",
+      error: "Failed to send message",
+      welcome: "Hello! I'm your AI assistant. How can I help you today?",
+      thinking: "Thinking...",
+      clear: "Clear Chat",
+      close: "Close",
+      examples_label: "Examples:",
+      example1: "What is Memento Mori?",
+      example2: "How do I issue a token?",
+      example3: "How does trading work?"
+    },
+
+    mustBeLoggedIn: "You must be logged in to perform this action",
+    tokenIssuedSuccess: "Token issued successfully!",
+    tokenIssueFailed: "Failed to issue token. Please try again.",
+    tokenUpdatedSuccess: "Token updated successfully!",
+    tokenUpdateFailed: "Failed to update token. Please try again.",
+    updateToken: "Update Token",
+    editYourToken: "Edit your token details",
+    issuing: "Issuing...",
+    issueToken: "Issue Token",
+    createNewToken: "Create a new personal token",
+    updating: "Updating...",
+    unexpectedError: "An unexpected error occurred. Please try again.",
+    success: "Success",
+    error: "Error",
+
+    game_room: {
+      title: "Game Room",
+      lobby_title: "Game Lobby",
+      anonymous: "Anonymous",
+      no_games: "No active games found. Create one!",
+      quick_match_description: "Play against random opponents",
+      join_success_title: "Joined Game",
+      join_success_desc: "Game started!",
+      create_game: "Create Game",
+      join_game: "Join Game",
+      mmc_balance: "MMC Balance",
+      bet_amount: "Bet Amount",
+      waiting_opponent: "Waiting for opponent...",
+      your_move: "Choose your move",
+      opponent_chose: "Opponent has chosen",
+      you_won: "You Won!",
+      you_lost: "You Lost!",
+      draw: "Draw!",
+      rock: "Rock",
+      paper: "Paper",
+      scissors: "Scissors",
+      game_status: {
+        waiting: "Waiting",
+        active: "Active",
+        playing: "Playing",
+        finished: "Finished",
+        cancelled: "Cancelled"
+      },
+      create_game_modal: {
+        title: "Create New Game",
+        bet_label: "Bet Amount (MMC)",
+        min_bet: "Minimum: 10 MMC",
+        insufficient_balance: "Insufficient MMC balance",
+        create_button: "Create Game",
+        cancel_button: "Cancel"
+      },
+      game_info: {
+        host: "Host",
+        bet: "Bet",
+        status: "Status",
+        join: "Join",
+        cancel: "Cancel Game"
+      },
+      results: {
+        winner: "Winner",
+        prize: "Prize",
+        play_again: "Play Again",
+        continue_playing: "Continue Playing",
+        new_round: "New Round",
+        end_game: "End Game",
+        you: "You"
+      },
+      actions: {
+        leave_waiting: "Leave lobby",
+        leave_game: "Leave game"
+      },
+      errors: {
+        create_failed: "Failed to create game",
+        join_failed: "Failed to join game",
+        move_failed: "Failed to submit move",
+        insufficient_mmc: "Insufficient Memento Mori Coins"
+      },
+      equity_exchange: {
+        title: "Exchange Equity for MMC",
+        description: "Trade 1% of your personal token supply for 1,000,000 MMC.",
+        button: "Get 1,000,000 MMC",
+        cost: "Cost: 1% of your Token Supply",
+        warning: "Warning: There is NO cash out for MMC. This is for gaming only.",
+        success: "Successfully exchanged equity for MMC!",
+        no_token: "You must issue a token first",
+        already_used_label: "Already exchanged - One time offer used",
+        already_used_button: "Already Used"
+      },
+      private: {
+        title: "Create Private Game",
+        subtitle: "Set your bet and share the code with a friend",
+        description: "Create or join a private game",
+        created_title: "Private Game Created",
+        share_code: "Share code:",
+        share_with_friend: "Share this code with your friend:",
+        waiting_opponent: "Waiting for Opponent...",
+        join_title: "Join Private Game",
+        join_subtitle: "Enter the 6-character game code",
+        code_placeholder: "ABC123"
+      },
+      bet_change: {
+        label: "Bet change",
+        propose_button: "Propose bet change",
+        pending_for_other: "Waiting for the other player to accept your new bet of {{amount}} MMC",
+        pending_for_you: "Your opponent proposes a new bet of {{amount}} MMC",
+        accept_button: "Accept new bet"
+      }
+    },
+
+    mmc: {
+      name: "Memento Mori Coins",
+      short: "MMC",
+      balance: "MMC Balance",
+      deposit: "Get MMC",
+      exchange_rate: "1 USD = 100 MMC",
+      convert_to_mmc: "Convert USD to MMC",
+      amount_usd: "Amount (USD)",
+      amount_mmc: "You will receive (MMC)",
+      convert_button: "Convert",
+      conversion_success: "Conversion successful",
+      conversion_failed: "Conversion failed"
+    }
+  },
+
+  es: {
+    common: {
+      edit: "Editar",
+      save: "Guardar",
+      delete: "Eliminar",
+      cancel: "Cancelar",
+      confirm: "Confirmar",
+      close: "Cerrar",
+      success: "Éxito",
+      error: "Error",
+      loading: "Cargando...",
+      required: "Todos los campos son requeridos"
+    },
+
+    nav: {
+      market: "Mercado",
+      issue: "Emitir Ficha",
+      portfolio: "Portafolio",
+      trading: "Trading",
+      payments: "Pagos",
+      logout: "Cerrar Sesión",
+      connect: "Ingresar",
+      github: "GitHub",
+      go_to_app: "Ir a la App",
+      back_home: "Volver al Inicio"
+    },
+
+    auth: {
+      loginTitle: "Iniciar Sesión",
+      signupTitle: "Registrarse",
+      sign_in: "Iniciar Sesión",
+      sign_up: "Registrarse",
+      email: "Correo Electrónico",
+      password: "Contraseña",
+      confirmPassword: "Confirmar Contraseña",
+      fullName: "Nombre Completo",
+      username: "Nombre de Usuario",
+      forgotPassword: "¿Olvidaste tu contraseña?",
+      noAccount: "¿No tienes una cuenta?",
+      hasAccount: "¿Ya tienes una cuenta?",
+      title: "Autenticación",
+      verify_email_title: "Verifica Tu Correo",
+      verify_email_message: "Por favor revisa tu correo para verificar tu cuenta antes de continuar.",
+      reset_title: "Restablecer Contraseña",
+      reset_desc: "Ingresa tu correo para recibir un enlace de restablecimiento",
+      reset_success: "Contraseña actualizada exitosamente",
+      reset_email_sent: "Enlace enviado a tu correo",
+      signing_in: "Iniciando sesión...",
+      signing_up: "Registrando...",
+      sending: "Enviando...",
+      send_link: "Enviar Enlace",
+      back_to_login: "Volver al Login",
+      password_updated: "Contraseña Actualizada",
+      resetPassword: "Restablecer Contraseña",
+      updatePassword: "Actualizar Contraseña",
+      newPassword: "Nueva Contraseña",
+      updating: "Actualizando...",
+      update: "Actualizar Contraseña",
+      invalidSession: "Enlace de recuperación inválido o expirado",
+      redirecting: "Redirigiendo..."
+    },
+
+    landing: {
+      title: "MEMENTO MORI",
+      subtitle: "Tokeniza Tu Legado",
+      tagline: "RECUERDA QUE DEBES MORIR",
+      description: "Convierte tu patrimonio neto futuro en fichas comerciables hoy. Un mercado para activos respaldados por legados personales.",
+      start_now: "Crear Cuenta",
+      cta_primary: "Comenzar",
+      cta_secondary: "Saber Más",
+      final_cta_subtitle: "Únete al futuro de la tokenización de legados personales",
+      how_title: "Cómo Funciona",
+      how_subtitle: "Tres simples pasos para comenzar a comerciar con fichas personales",
+      stats: {
+        users: "Usuarios Activos",
+        tokens: "Fichas Emitidas",
+        market_cap: "Capitalización Total"
+      },
+      features: {
+        issue_title: "Emitir Fichas",
+        issue_desc: "Crea fichas personales respaldadas por tu patrimonio neto futuro al momento de tu muerte",
+        trade_title: "Comercia Libremente",
+        trade_desc: "Compra y vende fichas en nuestro mercado abierto con precios dinámicos",
+        valuation_title: "Valoración Dinámica",
+        valuation_desc: "Precios en tiempo real basados en demanda del mercado y evaluación de riesgo de mortalidad",
+        security_title: "Seguro y Transparente",
+        security_desc: "Contratos verificados en la plataforma aseguran confianza y transparencia"
+      },
+      steps: {
+        step1_title: "Crea Tu Ficha",
+        step1_desc: "Emite una ficha personal respaldada por tu patrimonio neto al momento de tu muerte",
+        step2_title: "Define Tus Términos",
+        step2_desc: "Establece suministro, valoración y mecánicas de distribución",
+        step3_title: "Comienza a Comerciar",
+        step3_desc: "Compra, vende e intercambia fichas en el mercado abierto",
+        step4_title: "Reclama Retornos",
+        step4_desc: "Los poseedores reciben pagos proporcionales al evento de mortalidad"
+      }
+    },
+
+    footer: {
+      description: "Un mercado para fichas personales respaldadas por legados",
+      rights: "Todos los derechos reservados",
+      privacy: "Política de Privacidad",
+      terms: "Términos de Servicio",
+      docs: "Documentación"
+    },
+
+    market: {
+      title: "Explorar Fichas",
+      search: "Buscar fichas...",
+      all_tokens: "Todas las Fichas",
+      ticker: "Símbolo",
+      issuer: "Emisor",
+      price: "Precio",
+      change_24h: "Cambio 24h",
+      market_cap: "Cap. de Mercado",
+      supply: "Suministro",
+      total_supply: "Suministro Total",
+      view_details: "Ver Detalles",
+      no_tokens: "No hay fichas disponibles",
+      loading_market: "Cargando datos del mercado..."
+    },
+
+    issue: {
+      title: "Emite Tu Ficha",
+      subtitle: "Crea una ficha respaldada por tu patrimonio neto",
+      active_token: "Tu Ficha Activa",
+      token_name: "Nombre de la Ficha",
+      token_symbol: "Símbolo de la Ficha",
+      total_supply: "Suministro Total",
+      initial_price: "Precio Inicial (USD)",
+      net_worth: "Patrimonio Neto Estimado",
+      distribution: "Dirección de Distribución",
+      create_token: "Crear Ficha",
+      creating: "Creando...",
+      success: "Ficha creada exitosamente",
+      success_title: "Ficha Creada",
+      success_desc: "Tu ficha {{ticker}} ha sido creada exitosamente",
+      token_stats: "Estadísticas de la Ficha",
+      current_price: "Precio Actual",
+      holders: "Poseedores",
+      edit_token: "Editar Ficha",
+      delete_token: "Eliminar Ficha",
+      token_image: "Imagen del Token",
+      upload_file: "Subir Archivo",
+      paste_url: "Pegar URL",
+      image_hint: "Elige una imagen para tu token",
+      description: "Descripción",
+      description_placeholder: "Cuéntale a la gente sobre tu token...",
+      initial_valuation: "Capitalización Inicial",
+      token_name_label: "Nombre del Token",
+      net_worth_label: "Patrimonio Neto ($)",
+      total_supply_label: "Suministro Total",
+      initial_price_label: "Precio Inicial ($)"
+    },
+
+    portfolio: {
+      title: "Tu Portafolio",
+      total_value: "Valor Total del Portafolio",
+      tokens: "Tus Fichas",
+      token: "Ficha",
+      amount: "Cantidad",
+      value: "Valor",
+      avg_price: "Precio Prom",
+      no_holdings: "No hay fichas en el portafolio",
+      performance: "Rendimiento",
+      holdings: "Tenencias",
+      holdings_token: "Ficha",
+      holdings_amount: "Cantidad",
+      holdings_value: "Valor",
+      holdings_avg_price: "Precio Promedio",
+      balance: "Balance"
+    },
+
+    trading: {
+      title: "Trading",
+      select_token: "Selecciona una ficha para comerciar",
+      loading_market: "Cargando datos del mercado...",
+      market_price: "Precio de Mercado",
+      amount: "Cantidad",
+      price_usd: "Precio (USD)",
+      buy_title: "Comprar {{ticker}}",
+      sell_title: "Vender {{ticker}}",
+      place_buy_order: "Colocar Orden de Compra",
+      place_sell_order: "Colocar Orden de Venta",
+      no_active_orders: "No hay órdenes activas",
+      my_holdings: "Tus tenencias de {{ticker}}",
+      
+      tabs: {
+        buy: "Comprar",
+        sell: "Vender",
+        usd: "USD",
+        swap: "Intercambiar"
+      },
+
+      labels: {
+        token: "Ficha",
+        amount: "Cantidad",
+        price: "Precio",
+        total: "Total",
+        balance: "Balance",
+        from: "De",
+        to: "A",
+        you_pay: "Pagas",
+        you_receive: "Recibes",
+        slippage: "Tolerancia al Deslizamiento"
+      },
+
+      buttons: {
+        buy: "Comprar",
+        sell: "Vender",
+        swap: "Intercambiar",
+        buying: "Comprando...",
+        selling: "Vendiendo...",
+        swapping: "Intercambiando..."
+      },
+
+      order_book: {
+        title: "Libro de Órdenes",
+        price: "Precio",
+        amount: "Cantidad",
+        total: "Total",
+        no_orders: "No hay órdenes disponibles",
+        fill: "Ejecutar",
+        buy_orders: "Órdenes de Compra",
+        sell_orders: "Órdenes de Venta"
+      },
+
+      history: {
+        title: "Transacciones Recientes",
+        price: "Precio",
+        amount: "Cantidad",
+        time: "Hora",
+        no_trades: "No hay transacciones registradas"
+      },
+
+      holdings: {
+        title: "Tus Tenencias",
+        for_token: "Tus tenencias de"
+      },
+
+      success: {
+        buy: "Compra exitosa",
+        sell: "Venta exitosa",
+        swap: "Intercambio exitoso"
+      },
+
+      swap: {
+        title: "Intercambiar Tokens",
+        subtitle: "Cambiar {ticker} por otros tokens",
+        want_receive: "Quiero recibir",
+        pay_with: "Pagaré con",
+        token_placeholder: "Seleccionar token",
+        no_tokens: "No tienes tokens",
+        exchange_rate: "Tasa Est.",
+        post_offer: "Publicar Oferta",
+        active_offers: "Ofertas de Intercambio Activas",
+        receives: "Recibe",
+        pays: "Paga",
+        accept: "Aceptar Trato",
+        your_offer: "Tu Oferta",
+        cancel: "Cancelar Oferta",
+        success_msg: "¡Intercambio realizado con éxito!"
+      }
+    },
+
+    payments: {
+      title: "Pagos",
+      request_payment: "Solicitar Pago",
+      scan_pay: "Escanear y Pagar",
+      token: "Ficha",
+      amount: "Cantidad",
+      recipient: "Dirección del Destinatario",
+      generate_qr: "Generar Código QR",
+      scan_qr: "Escanear Código QR",
+      start_scanning: "Iniciar Escaneo",
+      stop_scanning: "Detener Escaneo",
+      camera_access: "Se requiere acceso a la cámara para escanear códigos QR",
+      confirm_payment: "Confirmar Pago",
+      send: "Enviar",
+      pay: "Pagar",
+      processing: "Procesando...",
+      success: "¡Pago exitoso!",
+      qr_generated: "Código QR generado",
+      scan_to_pay: "Escanea este código para recibir el pago",
+      error_invalid_qr: "Código QR inválido",
+      error_camera: "Acceso a cámara denegado"
+    },
+
+    orderBook: {
+      buy_orders: "Órdenes de Compra",
+      sell_orders: "Órdenes de Venta",
+      buy: "Comprar",
+      sell: "Vender",
+      fill: "Ejecutar",
+      title: "Libro de Órdenes",
+      price: "Precio",
+      amount: "Cantidad",
+      total: "Total"
+    },
+
+    chatbot: {
+      title: "Asistente IA",
+      placeholder: "Pregúntame sobre la plataforma...",
+      send: "Enviar",
+      sending: "Enviando...",
+      error: "Error al enviar mensaje",
+      welcome: "¡Hola! Soy tu asistente IA. ¿Cómo puedo ayudarte hoy?",
+      thinking: "Pensando...",
+      clear: "Limpiar Chat",
+      close: "Cerrar",
+      examples_label: "Ejemplos:",
+      example1: "¿Qué es Memento Mori?",
+      example2: "¿Cómo emito una ficha?",
+      example3: "¿Cómo funciona el trading?"
+    },
+
+    mustBeLoggedIn: "Debes iniciar sesión para realizar esta acción",
+    tokenIssuedSuccess: "¡Ficha emitida exitosamente!",
+    tokenIssueFailed: "Error al emitir la ficha. Inténtalo de nuevo.",
+    tokenUpdatedSuccess: "¡Ficha actualizada exitosamente!",
+    tokenUpdateFailed: "Error al actualizar la ficha. Inténtalo de nuevo.",
+    updateToken: "Actualizar Ficha",
+    editYourToken: "Edita los detalles de tu ficha",
+    issuing: "Emitiendo...",
+    issueToken: "Emitir Ficha",
+    createNewToken: "Crea una nueva ficha personal",
+    updating: "Actualizando...",
+    unexpectedError: "Ocurrió un error inesperado. Inténtalo de nuevo.",
+    success: "Éxito",
+    error: "Error",
+
+    game_room: {
+      title: "Sala de Juegos",
+      lobby_title: "Lobby de Juegos",
+      anonymous: "Anónimo",
+      no_games: "No hay partidas activas. ¡Crea una!",
+      quick_match_description: "Juega contra oponentes aleatorios",
+      join_success_title: "Te uniste a la partida",
+      join_success_desc: "¡La partida ha comenzado!",
+      create_game: "Crear Partida",
+      join_game: "Unirse",
+      mmc_balance: "Balance MMC",
+      bet_amount: "Monto de Apuesta",
+      waiting_opponent: "Esperando oponente...",
+      your_move: "Elige tu jugada",
+      opponent_chose: "El oponente eligió",
+      you_won: "¡Ganaste!",
+      you_lost: "Perdiste",
+      draw: "¡Empate!",
+      rock: "Piedra",
+      paper: "Papel",
+      scissors: "Tijeras",
+      game_status: {
+        waiting: "Esperando",
+        active: "Activo",
+        playing: "Jugando",
+        finished: "Finalizado",
+        cancelled: "Cancelado"
+      },
+      create_game_modal: {
+        title: "Crear Nueva Partida",
+        bet_label: "Monto de Apuesta (MMC)",
+        min_bet: "Mínimo: 10 MMC",
+        insufficient_balance: "Saldo MMC insuficiente",
+        create_button: "Crear Partida",
+        cancel_button: "Cancelar"
+      },
+      game_info: {
+        host: "Anfitrión",
+        bet: "Apuesta",
+        status: "Estado",
+        join: "Unirse",
+        cancel: "Cancelar Partida"
+      },
+      results: {
+        winner: "Ganador",
+        prize: "Premio",
+        play_again: "Jugar de Nuevo",
+        continue_playing: "Seguir Jugando",
+        new_round: "Nueva Ronda",
+        end_game: "Terminar Partida",
+        you: "Tú"
+      },
+      actions: {
+        leave_waiting: "Salir de la sala",
+        leave_game: "Salir del juego"
+      },
+      errors: {
+        create_failed: "Error al crear partida",
+        join_failed: "Error al unirse a partida",
+        move_failed: "Error al enviar jugada",
+        insufficient_mmc: "Monedas Memento Mori insuficientes"
+      },
+      equity_exchange: {
+        title: "Intercambiar Equity por MMC",
+        description: "Cambia el 1% de tu suministro de tokens por 1,000,000 MMC.",
+        button: "Obtener 1,000,000 MMC",
+        cost: "Costo: 1% de tu Suministro de Tokens",
+        warning: "Advertencia: No hay retiro de dinero para MMC. Esto es para jugar.",
+        success: "¡Intercambio exitoso!",
+        no_token: "Debes emitir un token primero",
+        already_used_label: "Ya intercambiaste - Oferta única usada",
+        already_used_button: "Ya usado"
+      },
+      private: {
+        title: "Crear Partida Privada",
+        subtitle: "Define tu apuesta y comparte el código con un amigo",
+        description: "Crea o únete a una partida privada",
+        created_title: "Partida Privada Creada",
+        share_code: "Comparte el código:",
+        share_with_friend: "Comparte este código con tu amigo:",
+        waiting_opponent: "Esperando oponente...",
+        join_title: "Unirse a Partida Privada",
+        join_subtitle: "Ingresa el código de 6 caracteres",
+        code_placeholder: "ABC123"
+      },
+      bet_change: {
+        label: "Cambio de apuesta",
+        propose_button: "Proponer cambio de apuesta",
+        pending_for_other: "Esperando que el otro jugador acepte tu nueva apuesta de {{amount}} MMC",
+        pending_for_you: "Tu oponente propone una nueva apuesta de {{amount}} MMC",
+        accept_button: "Aceptar nueva apuesta"
+      }
+    },
+
+    mmc: {
+      name: "Monedas Memento Mori",
+      short: "MMC",
+      balance: "Balance MMC",
+      deposit: "Obtener MMC",
+      exchange_rate: "1 USD = 100 MMC",
+      convert_to_mmc: "Convertir USD a MMC",
+      amount_usd: "Cantidad (USD)",
+      amount_mmc: "Recibirás (MMC)",
+      convert_button: "Convertir",
+      conversion_success: "Conversión exitosa",
+      conversion_failed: "Error en conversión"
+    }
+  }
+};
+
+export type TranslationKeys = typeof translations.en;
+export type Translations = typeof translations;
