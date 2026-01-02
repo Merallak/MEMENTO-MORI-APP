@@ -29,15 +29,19 @@ export function ActiveGame({
     const { user } = useAuth();
     const { t } = useLanguage();
 
-    const [game, setGame] = useState <
+    const [game, setGame] = useState<
         RPSGame & {
             host?: { full_name: string; email: string };
             guest?: { full_name: string; email: string };
         }
-        > (initialGame);
+    >(initialGame);
 
     const [loading, setLoading] = useState(false);
-    const [myMove, setMyMove] = useState < GameMove | null > (null);
+    const [myMove, setMyMove] = useState<GameMove | null>(null);
+
+    // Bet negotiation state (only used when bet_amount is not set yet)
+    const [newBet, setNewBet] = useState<number | "">("");
+    const [isBetSubmitting, setIsBetSubmitting] = useState(false);
 
     // Evitar closures “viejos” en callbacks
     const gameRef = useRef(game);
@@ -133,6 +137,52 @@ export function ActiveGame({
         }
     };
 
+    const handleProposeNewBet = async () => {
+        if (!user) return;
+        if (newBet === "" || Number(newBet) <= 0) return;
+
+        setIsBetSubmitting(true);
+        const { success, error } = await GameService.proposeNewBet(game.id, Number(newBet));
+        setIsBetSubmitting(false);
+
+        if (!success) {
+            toast({
+                title: t("common.error"),
+                description: error || "Failed to propose bet",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        toast({
+            title: t("common.success"),
+            description: "Bet proposed",
+        });
+    };
+
+    const handleAcceptNewBet = async () => {
+        if (!user) return;
+
+        setIsBetSubmitting(true);
+        const { success, error } = await GameService.acceptNewBet(game.id);
+        setIsBetSubmitting(false);
+
+        if (!success) {
+            toast({
+                title: t("common.error"),
+                description: error || "Failed to accept bet",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        toast({
+            title: t("common.success"),
+            description: "Bet accepted",
+        });
+        setNewBet("");
+    };
+
     const isHost = user?.id === game.host_id;
     const isGuest = user?.id === game.guest_id;
 
@@ -140,6 +190,26 @@ export function ActiveGame({
         myMove !== null || (isHost ? !!game.host_move : !!game.guest_move);
 
     const opponentHasMoved = isHost ? !!game.guest_move : !!game.host_move;
+
+    const betNotSet = game.bet_amount == null;
+    const betDisplay = game.bet_amount == null ? "—" : game.bet_amount;
+
+    const hasPendingBetProposal =
+        (game as any).next_bet_amount != null &&
+        (game as any).next_bet_proposer_id != null;
+
+    const iProposedBet =
+        hasPendingBetProposal &&
+        (game as any).next_bet_proposer_id === user?.id;
+
+    const canNegotiateBetNow =
+        (isHost || isGuest) &&
+        game.status === "active" &&
+        betNotSet &&
+        !!game.host_id &&
+        !!game.guest_id &&
+        !game.host_move &&
+        !game.guest_move;
 
     const getMoveIcon = (move: string | null) => {
         const iconVariants = {
@@ -261,7 +331,7 @@ export function ActiveGame({
                     </p>
 
                     <div className="text-xl text-yellow-400 mb-6">
-                        {t("game_room.results.prize")}: {game.bet_amount} MMC
+                        {t("game_room.results.prize")}: {betDisplay} MMC
                     </div>
 
                     <div className="space-y-3">
@@ -341,7 +411,7 @@ export function ActiveGame({
                             </Badge>
 
                             <CardTitle className="text-3xl font-serif">
-                                {game.bet_amount} MMC
+                                {betDisplay} MMC
                             </CardTitle>
 
                             <CardDescription>
@@ -405,6 +475,64 @@ export function ActiveGame({
                                     transition={{ duration: 0.4 }}
                                     className="space-y-8"
                                 >
+                                    {/* Bet negotiation (before playing first round) */}
+                                    {canNegotiateBetNow && (
+                                        <div className="rounded-xl border border-stone-200 dark:border-stone-800 p-4 space-y-3">
+                                            <div className="text-sm font-medium">
+                                                Apuesta (MMC)
+                                            </div>
+
+                                            {!hasPendingBetProposal ? (
+                                                <div className="flex items-center gap-2">
+                                                    <input
+                                                        type="number"
+                                                        min={1}
+                                                        value={newBet}
+                                                        onChange={(e) =>
+                                                            setNewBet(
+                                                                e.target.value === "" ? "" : Number(e.target.value)
+                                                            )
+                                                        }
+                                                        className="w-28 rounded-md border px-2 py-1 text-sm bg-background text-foreground"
+                                                    />
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={handleProposeNewBet}
+                                                        disabled={isBetSubmitting || newBet === "" || Number(newBet) <= 0}
+                                                    >
+                                                        {isBetSubmitting ? t("common.loading") : "Proponer"}
+                                                    </Button>
+                                                </div>
+                                            ) : (
+                                                <div className="rounded-lg border border-amber-500/60 bg-amber-500/10 p-3 text-sm space-y-2">
+                                                    {iProposedBet ? (
+                                                        <p className="text-amber-200">
+                                                            Propuesta enviada: {(game as any).next_bet_amount} MMC (esperando aceptación)
+                                                        </p>
+                                                    ) : (
+                                                        <>
+                                                            <p className="text-amber-200">
+                                                                Propuesta recibida: {(game as any).next_bet_amount} MMC
+                                                            </p>
+                                                            <Button
+                                                                size="sm"
+                                                                onClick={handleAcceptNewBet}
+                                                                disabled={isBetSubmitting}
+                                                            >
+                                                                {isBetSubmitting ? t("common.loading") : "Aceptar"}
+                                                            </Button>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            )}
+
+                                            <div className="text-xs text-muted-foreground">
+                                                Deben acordar la apuesta antes de jugar.
+                                            </div>
+                                        </div>
+                                    )}
+
                                     {/* Arena */}
                                     <motion.div
                                         className="flex justify-between items-center px-4 md:px-12"
@@ -508,7 +636,8 @@ export function ActiveGame({
                                     {/* Controls */}
                                     <AnimatePresence mode="wait">
                                         {(game.status === "active" || game.status === "playing") &&
-                                            !hasMoved && (
+                                            !hasMoved &&
+                                            game.bet_amount != null && (
                                                 <motion.div
                                                     key="move-controls"
                                                     initial={{ opacity: 0, y: 20 }}
