@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { GameService, type RPSGameWithHost } from "@/services/gameService";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -18,26 +18,24 @@ interface GameLobbyProps {
 export function GameLobby({ onGameJoined }: GameLobbyProps) {
     const { user } = useAuth();
     const { t } = useLanguage();
-    const [games, setGames] = useState < RPSGameWithHost[] > ([]);
+    const [games, setGames] = useState<RPSGameWithHost[]>([]);
     const [loading, setLoading] = useState(false);
     const [mmcBalance, setMmcBalance] = useState(0);
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [isConvertOpen, setIsConvertOpen] = useState(false);
     const [hasExchanged, setHasExchanged] = useState(false);
 
-    // Create Game State
-    const [betAmount, setBetAmount] = useState < string > ("10");
     const [createLoading, setCreateLoading] = useState(false);
 
     // Private Game State
     const [isPrivateGameOpen, setIsPrivateGameOpen] = useState(false);
     const [isJoinCodeOpen, setIsJoinCodeOpen] = useState(false);
-    const [privateGameCode, setPrivateGameCode] = useState < string > ("");
-    const [joinCode, setJoinCode] = useState < string > ("");
+    const [privateGameCode, setPrivateGameCode] = useState<string>("");
+    const [joinCode, setJoinCode] = useState<string>("");
     const [codeCopied, setCodeCopied] = useState(false);
 
     // Convert State
-    const [convertAmount, setConvertAmount] = useState < string > ("10");
+    const [convertAmount, setConvertAmount] = useState<string>("10");
     const [convertLoading, setConvertLoading] = useState(false);
 
     // Equity Exchange State
@@ -47,15 +45,12 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
         if (!user) return;
         setLoading(true);
 
-        // Load Balance
         const balance = await GameService.getMmcBalance(user.id);
         setMmcBalance(balance);
 
-        // Check if already exchanged equity
         const exchanged = await GameService.hasExchangedEquity(user.id);
         setHasExchanged(exchanged);
 
-        // Load Games
         const availableGames = await GameService.getAvailableGames();
         setGames(availableGames);
 
@@ -64,40 +59,15 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
 
     useEffect(() => {
         loadData();
-        // Simple polling every 10s
         const interval = setInterval(loadData, 10000);
         return () => clearInterval(interval);
     }, [user]);
-
-    const parseBet = () => {
-        const bet = Number(betAmount);
-        if (!Number.isFinite(bet) || bet <= 0) return { ok: false as const, bet: 0 };
-
-        // Si quieres forzar enteros:
-        const normalized = Math.floor(bet);
-
-        return { ok: true as const, bet: normalized };
-    };
 
     const handleCreateGame = async () => {
         if (!user) return;
 
         setCreateLoading(true);
 
-        // 0) Validar apuesta antes de crear
-        const parsed = parseBet();
-        if (!parsed.ok) {
-            toast({ title: "Error", description: "Apuesta inválida", variant: "destructive" });
-            setCreateLoading(false);
-            return;
-        }
-        if (parsed.bet > mmcBalance) {
-            toast({ title: t("common.error"), description: t("game_room.errors.insufficient_mmc"), variant: "destructive" });
-            setCreateLoading(false);
-            return;
-        }
-
-        // 1) Consultar si ya existe partida activa para este usuario
         const existing = await GameService.getUserActiveGame(user.id);
         if (existing) {
             setIsCreateOpen(false);
@@ -106,8 +76,8 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
             return;
         }
 
-        // 2) Crear nueva partida pública CON apuesta
-        const { success, error } = await GameService.createGame(parsed.bet);
+        // Create game WITHOUT bet; bet will be negotiated inside the room
+        const { success, error } = await GameService.createGame(0);
 
         if (success) {
             setIsCreateOpen(false);
@@ -126,23 +96,8 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
         if (!user) return;
         setCreateLoading(true);
 
-        // 0) Validar apuesta antes de crear
-        const parsed = parseBet();
-        if (!parsed.ok) {
-            toast({ title: "Error", description: "Apuesta inválida", variant: "destructive" });
-            setCreateLoading(false);
-            return;
-        }
-        if (parsed.bet > mmcBalance) {
-            toast({ title: t("common.error"), description: t("game_room.errors.insufficient_mmc"), variant: "destructive" });
-            setCreateLoading(false);
-            return;
-        }
-
-        // 1) Verificar si ya hay una partida activa para este usuario
         const existing = await GameService.getUserActiveGame(user.id);
         if (existing) {
-            // Si la partida ya tiene un código privado, úsalo; si no, solo entra a la sala
             const existingCode = (existing as any).game_code as string | null | undefined;
             if (existingCode) {
                 setPrivateGameCode(existingCode);
@@ -156,8 +111,8 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
             return;
         }
 
-        // 2) Crear nueva partida privada vía RPC CON apuesta
-        const { success, gameCode, error } = await GameService.createPrivateGame(parsed.bet);
+        // Create private game WITHOUT bet; bet will be negotiated inside the room
+        const { success, gameCode, error } = await GameService.createPrivateGame(0);
 
         if (success && gameCode) {
             setPrivateGameCode(gameCode);
@@ -198,13 +153,11 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
             return;
         }
 
-        // Si ya eres el host de este juego, entra directamente sin llamar al RPC
         if (isHost) {
             onGameJoined();
             return;
         }
 
-        // Salvaguarda adicional: comprobar en backend si realmente eres el host
         if (user) {
             const { data } = await GameService.getGame(gameId);
             if (data && data.host_id === user.id) {
@@ -306,10 +259,7 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
                             <p className="text-sm text-muted-foreground text-center">{t("game_room.quick_match_description")}</p>
                             <Dialog
                                 open={isCreateOpen}
-                                onOpenChange={(open) => {
-                                    setIsCreateOpen(open);
-                                    if (!open) setBetAmount("10");
-                                }}
+                                onOpenChange={setIsCreateOpen}
                             >
                                 <DialogTrigger asChild>
                                     <Button size="lg" className="w-full gap-2">
@@ -320,22 +270,10 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
                                 <DialogContent>
                                     <DialogHeader>
                                         <DialogTitle>{t("game_room.create_game_modal.title")}</DialogTitle>
-                                        <DialogDescription>{t("game_room.create_game_modal.min_bet")}</DialogDescription>
+                                        <DialogDescription>
+                                            {t("game_room.create_game_modal.created_desc") || "Waiting for opponent..."}
+                                        </DialogDescription>
                                     </DialogHeader>
-
-                                    {/* INPUT APUESTA (ANTES DE JUGAR) */}
-                                    <div className="py-4 space-y-2">
-                                        <label className="text-sm font-medium">Apuesta (MMC)</label>
-                                        <Input
-                                            type="number"
-                                            min={1}
-                                            value={betAmount}
-                                            onChange={(e) => setBetAmount(e.target.value)}
-                                        />
-                                        <p className="text-xs text-muted-foreground">
-                                            Balance: {mmcBalance.toLocaleString()} MMC
-                                        </p>
-                                    </div>
 
                                     <DialogFooter>
                                         <Button variant="outline" onClick={() => setIsCreateOpen(false)}>
@@ -359,7 +297,6 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
                                         if (!open) {
                                             setPrivateGameCode("");
                                             setCodeCopied(false);
-                                            setBetAmount("10");
                                         }
                                     }}
                                 >
@@ -377,20 +314,6 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
 
                                         {!privateGameCode ? (
                                             <>
-                                                {/* INPUT APUESTA (ANTES DE CREAR PARTIDA PRIVADA) */}
-                                                <div className="py-4 space-y-2">
-                                                    <label className="text-sm font-medium">Apuesta (MMC)</label>
-                                                    <Input
-                                                        type="number"
-                                                        min={1}
-                                                        value={betAmount}
-                                                        onChange={(e) => setBetAmount(e.target.value)}
-                                                    />
-                                                    <p className="text-xs text-muted-foreground">
-                                                        Balance: {mmcBalance.toLocaleString()} MMC
-                                                    </p>
-                                                </div>
-
                                                 <DialogFooter>
                                                     <Button variant="outline" onClick={() => setIsPrivateGameOpen(false)}>
                                                         {t("common.cancel")}
@@ -529,14 +452,14 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
                                     <CardHeader className="pb-2">
                                         <div className="flex justify-between items-start">
                                             <Badge variant="outline">{t("game_room.game_info.host")}</Badge>
-                                            <Badge className="bg-primary text-primary-foreground">{game.bet_amount} MMC</Badge>
+                                            <Badge className="bg-primary text-primary-foreground">{game.bet_amount ?? "—"} MMC</Badge>
                                         </div>
                                         <CardTitle className="mt-2 truncate">{game.host?.full_name || t("game_room.anonymous")}</CardTitle>
                                     </CardHeader>
                                     <CardContent className="space-y-2">
                                         <div className="flex justify-between items-center">
                                             <span className="text-sm text-muted-foreground">{t("game_room.game_info.bet")}</span>
-                                            <span className="text-sm font-medium">{game.bet_amount}</span>
+                                            <span className="text-sm font-medium">{game.bet_amount ?? "—"}</span>
                                         </div>
                                         <div className="flex justify-between items-center">
                                             <span className="text-sm text-muted-foreground">{t("game_room.game_info.status")}</span>
@@ -547,7 +470,7 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
                                     </CardContent>
                                     <CardFooter className="pt-2">
                                         <Button
-                                            onClick={() => !disableJoin && handleJoinGame(game.id, game.bet_amount, !!isHost)}
+                                            onClick={() => handleJoinGame(game.id, game.bet_amount ?? 0, !!isHost)}
                                             disabled={disableJoin}
                                             className="w-full"
                                         >
