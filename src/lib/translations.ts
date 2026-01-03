@@ -1,3 +1,5 @@
+import { create } from "domain";
+
 export type Language = "en" | "es";
 
 export const translations = {
@@ -368,7 +370,9 @@ export const translations = {
         min_bet: "Minimum: 10 MMC",
         insufficient_balance: "Insufficient MMC balance",
         create_button: "Create Game",
-        cancel_button: "Cancel"
+        cancel_button: "Cancel",
+        created_title: "Game Created",
+        created_desc: "waiting for opponent..."
       },
       game_info: {
         host: "Host",
@@ -403,6 +407,7 @@ export const translations = {
         cost: "Cost: 1% of your Token Supply",
         warning: "Warning: There is NO cash out for MMC. This is for gaming only.",
         success: "Successfully exchanged equity for MMC!",
+        added_desc: "1,000,000 MMC added to your balance.",
         no_token: "You must issue a token first",
         already_used_label: "Already exchanged - One time offer used",
         already_used_button: "Already Used"
@@ -442,8 +447,15 @@ export const translations = {
         opponent: "Opponent",
         vs: "VS"
       }
+      lobby_ui: {
+      quick_match: "Quick Match",
+      play_with_friends: "Play with Friends",
+      create: "Create",
+      join: "Join",
+      create_private_game: "Create Private Game",
+      copied_title: "Copied!",
+      copied_desc: "Game code copied to clipboard"
     },
-
     mmc: {
       name: "Memento Mori Coins",
       short: "MMC",
@@ -826,7 +838,9 @@ export const translations = {
         min_bet: "Mínimo: 10 MMC",
         insufficient_balance: "Saldo MMC insuficiente",
         create_button: "Crear Partida",
-        cancel_button: "Cancelar"
+        cancel_button: "Cancelar",
+        created_title: "Partida Creada",
+        created_desc: "Esperando oponente..."
       },
       game_info: {
         host: "Anfitrión",
@@ -861,6 +875,7 @@ export const translations = {
         cost: "Costo: 1% de tu Suministro de Tokens",
         warning: "Advertencia: No hay retiro de dinero para MMC. Esto es para jugar.",
         success: "¡Intercambio exitoso!",
+        added_desc: "1,000,000 MMC añadido a tu balance.",
         no_token: "Debes emitir un token primero",
         already_used_label: "Ya intercambiaste - Oferta única usada",
         already_used_button: "Ya usado"
