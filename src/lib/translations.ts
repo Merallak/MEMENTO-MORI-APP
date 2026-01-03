@@ -1,5 +1,3 @@
-import { create } from "domain";
-
 export type Language = "en" | "es";
 
 export const translations = {
@@ -14,7 +12,7 @@ export const translations = {
       success: "Success",
       error: "Error",
       loading: "Loading...",
-      required: "All fields are required"
+      required: "All fields are required",
     },
 
     nav: {
@@ -27,7 +25,7 @@ export const translations = {
       connect: "Log In",
       github: "GitHub",
       go_to_app: "Go to App",
-      back_home: "Back to Home"
+      back_home: "Back to Home",
     },
 
     auth: {
@@ -45,7 +43,8 @@ export const translations = {
       hasAccount: "Already have an account?",
       title: "Authentication",
       verify_email_title: "Verify Your Email",
-      verify_email_message: "Please check your email to verify your account before continuing.",
+      verify_email_message:
+        "Please check your email to verify your account before continuing.",
       reset_title: "Reset Password",
       reset_desc: "Enter your email to receive a password reset link",
       reset_success: "Password updated successfully",
@@ -62,14 +61,15 @@ export const translations = {
       updating: "Updating...",
       update: "Update Password",
       invalidSession: "Invalid or expired reset link",
-      redirecting: "Redirecting..."
+      redirecting: "Redirecting...",
     },
 
     landing: {
       title: "MEMENTO MORI",
       subtitle: "Tokenize Your Legacy",
       tagline: "REMEMBER YOU MUST DIE",
-      description: "Turn your future net worth into tradable tokens today. A marketplace for personal legacy-backed assets.",
+      description:
+        "Turn your future net worth into tradable tokens today. A marketplace for personal legacy-backed assets.",
       start_now: "Create Account",
       cta_primary: "Get Started",
       cta_secondary: "Learn More",
@@ -79,28 +79,34 @@ export const translations = {
       stats: {
         users: "Active Users",
         tokens: "Tokens Issued",
-        market_cap: "Total Market Cap"
+        market_cap: "Total Market Cap",
       },
       features: {
         issue_title: "Issue Tokens",
-        issue_desc: "Create personal tokens backed by your future net worth at the time of death",
+        issue_desc:
+          "Create personal tokens backed by your future net worth at the time of death",
         trade_title: "Trade Freely",
-        trade_desc: "Buy and sell tokens in our open marketplace with dynamic pricing",
+        trade_desc:
+          "Buy and sell tokens in our open marketplace with dynamic pricing",
         valuation_title: "Dynamic Valuation",
-        valuation_desc: "Real-time pricing based on market demand and mortality risk assessment",
+        valuation_desc:
+          "Real-time pricing based on market demand and mortality risk assessment",
         security_title: "Secure & Transparent",
-        security_desc: "Platform verified contracts ensure trust and transparency"
+        security_desc:
+          "Platform verified contracts ensure trust and transparency",
       },
       steps: {
         step1_title: "Create Your Token",
-        step1_desc: "Issue a personal token backed by your net worth at the time of your death",
+        step1_desc:
+          "Issue a personal token backed by your net worth at the time of your death",
         step2_title: "Define Your Terms",
         step2_desc: "Set supply, valuation, and distribution mechanics",
         step3_title: "Start Trading",
         step3_desc: "Buy, sell, and exchange tokens in the open market",
         step4_title: "Claim Returns",
-        step4_desc: "Token holders receive proportional payouts upon mortality event"
-      }
+        step4_desc:
+          "Token holders receive proportional payouts upon mortality event",
+      },
     },
 
     footer: {
@@ -108,7 +114,7 @@ export const translations = {
       rights: "All rights reserved",
       privacy: "Privacy Policy",
       terms: "Terms of Service",
-      docs: "Documentation"
+      docs: "Documentation",
     },
 
     market: {
@@ -124,7 +130,7 @@ export const translations = {
       total_supply: "Total Supply",
       view_details: "View Details",
       no_tokens: "No tokens available",
-      loading_market: "Loading market data..."
+      loading_market: "Loading market data...",
     },
 
     issue: {
@@ -157,7 +163,7 @@ export const translations = {
       token_name_label: "Token Name",
       net_worth_label: "Net Worth ($)",
       total_supply_label: "Total Supply",
-      initial_price_label: "Initial Price ($)"
+      initial_price_label: "Initial Price ($)",
     },
 
     portfolio: {
@@ -175,7 +181,7 @@ export const translations = {
       holdings_amount: "Amount",
       holdings_value: "Value",
       holdings_avg_price: "Average Price",
-      balance: "Balance"
+      balance: "Balance",
     },
 
     trading: {
@@ -196,7 +202,7 @@ export const translations = {
         buy: "Buy",
         sell: "Sell",
         usd: "USD",
-        swap: "Swap"
+        swap: "Swap",
       },
 
       labels: {
@@ -209,7 +215,7 @@ export const translations = {
         to: "To",
         you_pay: "You Pay",
         you_receive: "You Receive",
-        slippage: "Slippage Tolerance"
+        slippage: "Slippage Tolerance",
       },
 
       buttons: {
@@ -218,7 +224,7 @@ export const translations = {
         swap: "Swap",
         buying: "Buying...",
         selling: "Selling...",
-        swapping: "Swapping..."
+        swapping: "Swapping...",
       },
 
       order_book: {
@@ -229,7 +235,7 @@ export const translations = {
         no_orders: "No orders available",
         fill: "Fill",
         buy_orders: "Buy Orders",
-        sell_orders: "Sell Orders"
+        sell_orders: "Sell Orders",
       },
 
       history: {
@@ -237,18 +243,18 @@ export const translations = {
         price: "Price",
         amount: "Amount",
         time: "Time",
-        no_trades: "No trades recorded yet"
+        no_trades: "No trades recorded yet",
       },
 
       holdings: {
         title: "Your Holdings",
-        for_token: "Your holdings for"
+        for_token: "Your holdings for",
       },
 
       success: {
         buy: "Purchase successful",
         sell: "Sale successful",
-        swap: "Swap successful"
+        swap: "Swap successful",
       },
 
       swap: {
@@ -266,8 +272,8 @@ export const translations = {
         accept: "Accept Deal",
         your_offer: "Your Offer",
         cancel: "Cancel Offer",
-        success_msg: "Swap executed successfully!"
-      }
+        success_msg: "Swap executed successfully!",
+      },
     },
 
     payments: {
@@ -290,7 +296,7 @@ export const translations = {
       qr_generated: "QR Code generated",
       scan_to_pay: "Scan this code to receive payment",
       error_invalid_qr: "Invalid QR code",
-      error_camera: "Camera access denied"
+      error_camera: "Camera access denied",
     },
 
     orderBook: {
@@ -302,7 +308,7 @@ export const translations = {
       title: "Order Book",
       price: "Price",
       amount: "Amount",
-      total: "Total"
+      total: "Total",
     },
 
     chatbot: {
@@ -318,7 +324,7 @@ export const translations = {
       examples_label: "Examples:",
       example1: "What is Memento Mori?",
       example2: "How do I issue a token?",
-      example3: "How does trading work?"
+      example3: "How does trading work?",
     },
 
     mustBeLoggedIn: "You must be logged in to perform this action",
@@ -362,7 +368,7 @@ export const translations = {
         active: "Active",
         playing: "Playing",
         finished: "Finished",
-        cancelled: "Cancelled"
+        cancelled: "Cancelled",
       },
       create_game_modal: {
         title: "Create New Game",
@@ -372,14 +378,14 @@ export const translations = {
         create_button: "Create Game",
         cancel_button: "Cancel",
         created_title: "Game Created",
-        created_desc: "waiting for opponent..."
+        created_desc: "Waiting for opponent...",
       },
       game_info: {
         host: "Host",
         bet: "Bet",
         status: "Status",
         join: "Join",
-        cancel: "Cancel Game"
+        cancel: "Cancel Game",
       },
       results: {
         winner: "Winner",
@@ -388,29 +394,31 @@ export const translations = {
         continue_playing: "Continue Playing",
         new_round: "New Round",
         end_game: "End Game",
-        you: "You"
+        you: "You",
       },
       actions: {
         leave_waiting: "Leave lobby",
-        leave_game: "Leave game"
+        leave_game: "Leave game",
       },
       errors: {
         create_failed: "Failed to create game",
         join_failed: "Failed to join game",
         move_failed: "Failed to submit move",
-        insufficient_mmc: "Insufficient Memento Mori Coins"
+        insufficient_mmc: "Insufficient Memento Mori Coins",
       },
       equity_exchange: {
         title: "Exchange Equity for MMC",
-        description: "Trade 1% of user's personal token supply for 1,000,000 MMC.",
+        description:
+          "Trade 1% of user's personal token supply for 1,000,000 MMC.",
         button: "Get 1,000,000 MMC",
         cost: "Cost: 1% of your Token Supply",
-        warning: "Warning: There is NO cash out for MMC. This is for gaming only.",
+        warning:
+          "Warning: There is NO cash out for MMC. This is for gaming only.",
         success: "Successfully exchanged equity for MMC!",
         added_desc: "1,000,000 MMC added to your balance.",
         no_token: "You must issue a token first",
         already_used_label: "Already exchanged - One time offer used",
-        already_used_button: "Already Used"
+        already_used_button: "Already Used",
       },
       private: {
         title: "Create Private Game",
@@ -422,14 +430,16 @@ export const translations = {
         waiting_opponent: "Waiting for Opponent...",
         join_title: "Join Private Game",
         join_subtitle: "Enter the 6-character game code",
-        code_placeholder: "ABC123"
+        code_placeholder: "ABC123",
       },
       bet_change: {
         label: "Bet change",
         propose_button: "Propose bet change",
-        pending_for_other: "Waiting for the other player to accept your new bet of {{amount}} MMC",
-        pending_for_you: "Your opponent proposes a new bet of {{amount}} MMC",
-        accept_button: "Accept new bet"
+        pending_for_other:
+          "Waiting for the other player to accept your new bet of {{amount}} MMC",
+        pending_for_you:
+          "Your opponent proposes a new bet of {{amount}} MMC",
+        accept_button: "Accept new bet",
       },
       active_game: {
         bet_amount_mmc: "Bet (MMC)",
@@ -445,17 +455,19 @@ export const translations = {
         host_vs_you: "Host vs You",
         you: "You",
         opponent: "Opponent",
-        vs: "VS"
-      }
+        vs: "VS",
+      },
       lobby_ui: {
-      quick_match: "Quick Match",
-      play_with_friends: "Play with Friends",
-      create: "Create",
-      join: "Join",
-      create_private_game: "Create Private Game",
-      copied_title: "Copied!",
-      copied_desc: "Game code copied to clipboard"
-    },
+        quick_match: "Quick Match",
+        play_with_friends: "Play with Friends",
+        create: "Create",
+        join: "Join",
+        create_private_game: "Create Private Game",
+        copied_title: "Copied!",
+        copied_desc: "Game code copied to clipboard",
+      },
+    }, // IMPORTANT: this comma must exist before `mmc`
+
     mmc: {
       name: "Memento Mori Coins",
       short: "MMC",
@@ -467,8 +479,8 @@ export const translations = {
       amount_mmc: "You will receive (MMC)",
       convert_button: "Convert",
       conversion_success: "Conversion successful",
-      conversion_failed: "Conversion failed"
-    }
+      conversion_failed: "Conversion failed",
+    },
   },
 
   es: {
@@ -482,7 +494,7 @@ export const translations = {
       success: "Éxito",
       error: "Error",
       loading: "Cargando...",
-      required: "Todos los campos son requeridos"
+      required: "Todos los campos son requeridos",
     },
 
     nav: {
@@ -495,7 +507,7 @@ export const translations = {
       connect: "Ingresar",
       github: "GitHub",
       go_to_app: "Ir a la App",
-      back_home: "Volver al Inicio"
+      back_home: "Volver al Inicio",
     },
 
     auth: {
@@ -513,7 +525,8 @@ export const translations = {
       hasAccount: "¿Ya tienes una cuenta?",
       title: "Autenticación",
       verify_email_title: "Verifica Tu Correo",
-      verify_email_message: "Por favor revisa tu correo para verificar tu cuenta antes de continuar.",
+      verify_email_message:
+        "Por favor revisa tu correo para verificar tu cuenta antes de continuar.",
       reset_title: "Restablecer Contraseña",
       reset_desc: "Ingresa tu correo para recibir un enlace de restablecimiento",
       reset_success: "Contraseña actualizada exitosamente",
@@ -530,45 +543,55 @@ export const translations = {
       updating: "Actualizando...",
       update: "Actualizar Contraseña",
       invalidSession: "Enlace de recuperación inválido o expirado",
-      redirecting: "Redirigiendo..."
+      redirecting: "Redirigiendo...",
     },
 
     landing: {
       title: "MEMENTO MORI",
       subtitle: "Tokeniza Tu Legado",
       tagline: "RECUERDA QUE DEBES MORIR",
-      description: "Convierte tu patrimonio neto futuro en fichas comerciables hoy. Un mercado para activos respaldados por legados personales.",
+      description:
+        "Convierte tu patrimonio neto futuro en fichas comerciables hoy. Un mercado para activos respaldados por legados personales.",
       start_now: "Crear Cuenta",
       cta_primary: "Comenzar",
       cta_secondary: "Saber Más",
-      final_cta_subtitle: "Únete al futuro de la tokenización de legados personales",
+      final_cta_subtitle:
+        "Únete al futuro de la tokenización de legados personales",
       how_title: "Cómo Funciona",
-      how_subtitle: "Tres simples pasos para comenzar a comerciar con fichas personales",
+      how_subtitle:
+        "Tres simples pasos para comenzar a comerciar con fichas personales",
       stats: {
         users: "Usuarios Activos",
         tokens: "Fichas Emitidas",
-        market_cap: "Capitalización Total"
+        market_cap: "Capitalización Total",
       },
       features: {
         issue_title: "Emitir Fichas",
-        issue_desc: "Crea fichas personales respaldadas por tu patrimonio neto futuro al momento de tu muerte",
+        issue_desc:
+          "Crea fichas personales respaldadas por tu patrimonio neto futuro al momento de tu muerte",
         trade_title: "Comercia Libremente",
-        trade_desc: "Compra y vende fichas en nuestro mercado abierto con precios dinámicos",
+        trade_desc:
+          "Compra y vende fichas en nuestro mercado abierto con precios dinámicos",
         valuation_title: "Valoración Dinámica",
-        valuation_desc: "Precios en tiempo real basados en demanda del mercado y evaluación de riesgo de mortalidad",
+        valuation_desc:
+          "Precios en tiempo real basados en demanda del mercado y evaluación de riesgo de mortalidad",
         security_title: "Seguro y Transparente",
-        security_desc: "Contratos verificados en la plataforma aseguran confianza y transparencia"
+        security_desc:
+          "Contratos verificados en la plataforma aseguran confianza y transparencia",
       },
       steps: {
         step1_title: "Crea Tu Ficha",
-        step1_desc: "Emite una ficha personal respaldada por tu patrimonio neto al momento de tu muerte",
+        step1_desc:
+          "Emite una ficha personal respaldada por tu patrimonio neto al momento de tu muerte",
         step2_title: "Define Tus Términos",
-        step2_desc: "Establece suministro, valoración y mecánicas de distribución",
+        step2_desc:
+          "Establece suministro, valoración y mecánicas de distribución",
         step3_title: "Comienza a Comerciar",
         step3_desc: "Compra, vende e intercambia fichas en el mercado abierto",
         step4_title: "Reclama Retornos",
-        step4_desc: "Los poseedores reciben pagos proporcionales al evento de mortalidad"
-      }
+        step4_desc:
+          "Los poseedores reciben pagos proporcionales al evento de mortalidad",
+      },
     },
 
     footer: {
@@ -576,7 +599,7 @@ export const translations = {
       rights: "Todos los derechos reservados",
       privacy: "Política de Privacidad",
       terms: "Términos de Servicio",
-      docs: "Documentación"
+      docs: "Documentación",
     },
 
     market: {
@@ -592,7 +615,7 @@ export const translations = {
       total_supply: "Suministro Total",
       view_details: "Ver Detalles",
       no_tokens: "No hay fichas disponibles",
-      loading_market: "Cargando datos del mercado..."
+      loading_market: "Cargando datos del mercado...",
     },
 
     issue: {
@@ -625,7 +648,7 @@ export const translations = {
       token_name_label: "Nombre del Token",
       net_worth_label: "Patrimonio Neto ($)",
       total_supply_label: "Suministro Total",
-      initial_price_label: "Precio Inicial ($)"
+      initial_price_label: "Precio Inicial ($)",
     },
 
     portfolio: {
@@ -643,7 +666,7 @@ export const translations = {
       holdings_amount: "Cantidad",
       holdings_value: "Valor",
       holdings_avg_price: "Precio Promedio",
-      balance: "Balance"
+      balance: "Balance",
     },
 
     trading: {
@@ -664,7 +687,7 @@ export const translations = {
         buy: "Comprar",
         sell: "Vender",
         usd: "USD",
-        swap: "Intercambiar"
+        swap: "Intercambiar",
       },
 
       labels: {
@@ -677,7 +700,7 @@ export const translations = {
         to: "A",
         you_pay: "Pagas",
         you_receive: "Recibes",
-        slippage: "Tolerancia al Deslizamiento"
+        slippage: "Tolerancia al Deslizamiento",
       },
 
       buttons: {
@@ -686,7 +709,7 @@ export const translations = {
         swap: "Intercambiar",
         buying: "Comprando...",
         selling: "Vendiendo...",
-        swapping: "Intercambiando..."
+        swapping: "Intercambiando...",
       },
 
       order_book: {
@@ -697,7 +720,7 @@ export const translations = {
         no_orders: "No hay órdenes disponibles",
         fill: "Ejecutar",
         buy_orders: "Órdenes de Compra",
-        sell_orders: "Órdenes de Venta"
+        sell_orders: "Órdenes de Venta",
       },
 
       history: {
@@ -705,18 +728,18 @@ export const translations = {
         price: "Precio",
         amount: "Cantidad",
         time: "Hora",
-        no_trades: "No hay transacciones registradas"
+        no_trades: "No hay transacciones registradas",
       },
 
       holdings: {
         title: "Tus Tenencias",
-        for_token: "Tus tenencias de"
+        for_token: "Tus tenencias de",
       },
 
       success: {
         buy: "Compra exitosa",
         sell: "Venta exitosa",
-        swap: "Intercambio exitoso"
+        swap: "Intercambio exitoso",
       },
 
       swap: {
@@ -734,8 +757,8 @@ export const translations = {
         accept: "Aceptar Trato",
         your_offer: "Tu Oferta",
         cancel: "Cancelar Oferta",
-        success_msg: "¡Intercambio realizado con éxito!"
-      }
+        success_msg: "¡Intercambio realizado con éxito!",
+      },
     },
 
     payments: {
@@ -749,7 +772,8 @@ export const translations = {
       scan_qr: "Escanear Código QR",
       start_scanning: "Iniciar Escaneo",
       stop_scanning: "Detener Escaneo",
-      camera_access: "Se requiere acceso a la cámara para escanear códigos QR",
+      camera_access:
+        "Se requiere acceso a la cámara para escanear códigos QR",
       confirm_payment: "Confirmar Pago",
       send: "Enviar",
       pay: "Pagar",
@@ -758,7 +782,7 @@ export const translations = {
       qr_generated: "Código QR generado",
       scan_to_pay: "Escanea este código para recibir el pago",
       error_invalid_qr: "Código QR inválido",
-      error_camera: "Acceso a cámara denegado"
+      error_camera: "Acceso a cámara denegado",
     },
 
     orderBook: {
@@ -770,7 +794,7 @@ export const translations = {
       title: "Libro de Órdenes",
       price: "Precio",
       amount: "Cantidad",
-      total: "Total"
+      total: "Total",
     },
 
     chatbot: {
@@ -786,7 +810,7 @@ export const translations = {
       examples_label: "Ejemplos:",
       example1: "¿Qué es Memento Mori?",
       example2: "¿Cómo emito una ficha?",
-      example3: "¿Cómo funciona el trading?"
+      example3: "¿Cómo funciona el trading?",
     },
 
     mustBeLoggedIn: "Debes iniciar sesión para realizar esta acción",
@@ -830,7 +854,7 @@ export const translations = {
         active: "Activo",
         playing: "Jugando",
         finished: "Finalizado",
-        cancelled: "Cancelado"
+        cancelled: "Cancelado",
       },
       create_game_modal: {
         title: "Crear Nueva Partida",
@@ -840,14 +864,14 @@ export const translations = {
         create_button: "Crear Partida",
         cancel_button: "Cancelar",
         created_title: "Partida Creada",
-        created_desc: "Esperando oponente..."
+        created_desc: "Esperando oponente...",
       },
       game_info: {
         host: "Anfitrión",
         bet: "Apuesta",
         status: "Estado",
         join: "Unirse",
-        cancel: "Cancelar Partida"
+        cancel: "Cancelar Partida",
       },
       results: {
         winner: "Ganador",
@@ -856,29 +880,31 @@ export const translations = {
         continue_playing: "Seguir Jugando",
         new_round: "Nueva Ronda",
         end_game: "Terminar Partida",
-        you: "Tú"
+        you: "Tú",
       },
       actions: {
         leave_waiting: "Salir de la sala",
-        leave_game: "Salir del juego"
+        leave_game: "Salir del juego",
       },
       errors: {
         create_failed: "Error al crear partida",
         join_failed: "Error al unirse a partida",
         move_failed: "Error al enviar jugada",
-        insufficient_mmc: "Monedas Memento Mori insuficientes"
+        insufficient_mmc: "Monedas Memento Mori insuficientes",
       },
       equity_exchange: {
         title: "Intercambiar Equity por MMC",
-        description: "Cambia el 1% de tu suministro de tokens por 1,000,000 MMC.",
+        description:
+          "Cambia el 1% de tu suministro de tokens por 1,000,000 MMC.",
         button: "Obtener 1,000,000 MMC",
         cost: "Costo: 1% de tu Suministro de Tokens",
-        warning: "Advertencia: No hay retiro de dinero para MMC. Esto es para jugar.",
+        warning:
+          "Advertencia: No hay retiro de dinero para MMC. Esto es para jugar.",
         success: "¡Intercambio exitoso!",
-        added_desc: "1,000,000 MMC añadido a tu balance.",
+        added_desc: "Se agregaron 1,000,000 MMC a tu balance.",
         no_token: "Debes emitir un token primero",
         already_used_label: "Ya intercambiaste - Oferta única usada",
-        already_used_button: "Ya usado"
+        already_used_button: "Ya usado",
       },
       private: {
         title: "Crear Partida Privada",
@@ -890,14 +916,16 @@ export const translations = {
         waiting_opponent: "Esperando oponente...",
         join_title: "Unirse a Partida Privada",
         join_subtitle: "Ingresa el código de 6 caracteres",
-        code_placeholder: "ABC123"
+        code_placeholder: "ABC123",
       },
       bet_change: {
         label: "Cambio de apuesta",
         propose_button: "Proponer cambio de apuesta",
-        pending_for_other: "Esperando que el otro jugador acepte tu nueva apuesta de {{amount}} MMC",
-        pending_for_you: "Tu oponente propone una nueva apuesta de {{amount}} MMC",
-        accept_button: "Aceptar nueva apuesta"
+        pending_for_other:
+          "Esperando que el otro jugador acepte tu nueva apuesta de {{amount}} MMC",
+        pending_for_you:
+          "Tu oponente propone una nueva apuesta de {{amount}} MMC",
+        accept_button: "Aceptar nueva apuesta",
       },
       active_game: {
         bet_amount_mmc: "Apuesta (MMC)",
@@ -913,9 +941,18 @@ export const translations = {
         host_vs_you: "Anfitrión vs Tú",
         you: "Tú",
         opponent: "Oponente",
-        vs: "VS"
-      }
-    },
+        vs: "VS",
+      },
+      lobby_ui: {
+        quick_match: "Partida rápida",
+        play_with_friends: "Jugar con amigos",
+        create: "Crear",
+        join: "Unirse",
+        create_private_game: "Crear partida privada",
+        copied_title: "¡Copiado!",
+        copied_desc: "Código copiado al portapapeles",
+      },
+    }, // IMPORTANT: this comma must exist before `mmc`
 
     mmc: {
       name: "Monedas Memento Mori",
@@ -928,9 +965,9 @@ export const translations = {
       amount_mmc: "Recibirás (MMC)",
       convert_button: "Convertir",
       conversion_success: "Conversión exitosa",
-      conversion_failed: "Error en conversión"
-    }
-  }
+      conversion_failed: "Error en conversión",
+    },
+  },
 };
 
 export type TranslationKeys = typeof translations.en;
