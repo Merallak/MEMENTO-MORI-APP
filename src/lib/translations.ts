@@ -399,6 +399,8 @@ export const translations = {
       actions: {
         leave_waiting: "Leave lobby",
         leave_game: "Leave game",
+        leave_confirm_title: "Leave game?",
+        leave_confirm_desc: "Are you sure you want to leave? Your current game may be forfeited.",
       },
       errors: {
         create_failed: "Failed to create game",
@@ -885,6 +887,8 @@ export const translations = {
       actions: {
         leave_waiting: "Salir de la sala",
         leave_game: "Salir del juego",
+        leave_confirm_title: "¿Salir de la partida?",
+        leave_confirm_desc: "¿Seguro que quieres salir? Es posible que pierdas la partida en curso.",
       },
       errors: {
         create_failed: "Error al crear partida",
