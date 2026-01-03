@@ -8,6 +8,15 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogFooter,
+    DialogTrigger,
+    DialogDescription,
+} from "@/components/ui/dialog";
 import { GameService, type GameMove, type RPSGame } from "@/services/gameService";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -50,6 +59,9 @@ export function ActiveGame({
     // Bet negotiation state (only used when bet_amount is not set yet)
     const [newBet, setNewBet] = useState<number | "">("");
     const [isBetSubmitting, setIsBetSubmitting] = useState(false);
+
+    // Leave confirmation (in-game, centered)
+    const [leaveOpen, setLeaveOpen] = useState(false);
 
     // Evitar closures “viejos” en callbacks
     const gameRef = useRef(game);
@@ -178,6 +190,11 @@ export function ActiveGame({
         } else if (result.error) {
             toast({ title: t("common.error"), description: result.error, variant: "destructive" });
         }
+    };
+
+    const handleLeaveConfirmed = async () => {
+        setLeaveOpen(false);
+        await handleForfeit();
     };
 
     const handleProposeNewBet = async () => {
@@ -503,18 +520,6 @@ export function ActiveGame({
                                     >
                                         {t("game_room.waiting_opponent")}
                                     </motion.h3>
-
-                                    <div className="mt-4 flex flex-col sm:flex-row gap-3 justify-center">
-                                        <Button
-                                            variant="ghost"
-                                            onClick={handleForfeit}
-                                            className="text-muted-foreground hover:text-foreground"
-                                            disabled={loading}
-                                        >
-                                            <LogOut className="w-4 h-4 mr-2" />
-                                            {t("game_room.actions.leave_game")}
-                                        </Button>
-                                    </div>
                                 </motion.div>
                             ) : (
                                 <motion.div
@@ -747,18 +752,6 @@ export function ActiveGame({
                                                         <Loader2 className="w-5 h-5 animate-spin" />
                                                         {t("game_room.waiting_opponent")}
                                                     </div>
-
-                                                    <div className="flex justify-center mt-4">
-                                                        <Button
-                                                            variant="ghost"
-                                                            onClick={handleForfeit}
-                                                            disabled={loading}
-                                                            className="text-muted-foreground hover:text-foreground"
-                                                        >
-                                                            <LogOut className="w-4 h-4 mr-2" />
-                                                            {t("game_room.actions.leave_game")}
-                                                        </Button>
-                                                    </div>
                                                 </motion.div>
                                             )}
                                     </AnimatePresence>
@@ -769,6 +762,36 @@ export function ActiveGame({
                                 </motion.div>
                             )}
                         </AnimatePresence>
+
+                        {/* Leave game (centered, with confirmation) */}
+                        <Dialog open={leaveOpen} onOpenChange={setLeaveOpen}>
+                        <div className="flex justify-center pt-2">
+                            <DialogTrigger asChild>
+                            <Button variant="ghost" disabled={loading}>
+                                <LogOut className="w-4 h-4 mr-2" />
+                                {t("game_room.actions.leave_game")}
+                            </Button>
+                            </DialogTrigger>
+                        </div>
+
+                        <DialogContent>
+                            <DialogHeader>
+                            <DialogTitle>{t("game_room.actions.leave_confirm_title")}</DialogTitle>
+                            <DialogDescription>
+                                {t("game_room.actions.leave_confirm_desc")}
+                            </DialogDescription>
+                            </DialogHeader>
+
+                            <DialogFooter>
+                            <Button variant="outline" onClick={() => setLeaveOpen(false)} disabled={loading}>
+                                {t("common.cancel")}
+                            </Button>
+                            <Button onClick={handleLeaveConfirmed} disabled={loading}>
+                                {loading ? t("common.loading") : t("common.confirm")}
+                            </Button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
                     </CardContent>
                 </Card>
             </motion.div>
