@@ -39,6 +39,8 @@ export function ActiveGame({
     const [loading, setLoading] = useState(false);
     const [myMove, setMyMove] = useState<GameMove | null>(null);
 
+    const [mmcBalance, setMmcBalance] = useState<number | null>(null);
+
     // Bet negotiation state (only used when bet_amount is not set yet)
     const [newBet, setNewBet] = useState<number | "">("");
     const [isBetSubmitting, setIsBetSubmitting] = useState(false);
@@ -83,6 +85,41 @@ export function ActiveGame({
         };
     }, [initialGame.id, onGameEnd]);
 
+    useEffect(() => {
+        if (!user?.id) return;
+
+        let cancelled = false;
+
+        const loadBalance = async () => {
+            const bal = await GameService.getMmcBalance(user.id);
+            if (!cancelled) setMmcBalance(bal);
+        };
+
+        loadBalance();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [user?.id]);
+
+    useEffect(() => {
+        if (!user?.id) return;
+        if (game.status !== "finished") return;
+
+        let cancelled = false;
+
+        const refreshBalance = async () => {
+            const bal = await GameService.getMmcBalance(user.id);
+            if (!cancelled) setMmcBalance(bal);
+        };
+
+        refreshBalance();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [game.status, user?.id]);
+
     const handleMove = async (move: GameMove) => {
         if (!user) return;
         setLoading(true);
@@ -93,7 +130,7 @@ export function ActiveGame({
             setMyMove(move);
             toast({
                 title: t("common.success"),
-                description: "Move submitted successfully",
+                description: t("game_room.active_game.move_submitted"),
             });
         } else {
             toast({
@@ -120,7 +157,7 @@ export function ActiveGame({
             const { data } = await GameService.getGame(game.id);
             if (data) setGame(data);
         } else {
-            toast({ title: "Error", description: error, variant: "destructive" });
+            toast({ title: t("common.error"), description: error, variant: "destructive" });
         }
         setLoading(false);
     };
@@ -133,7 +170,7 @@ export function ActiveGame({
         if (result.success) {
             onGameEnd();
         } else if (result.error) {
-            toast({ title: "Error", description: result.error, variant: "destructive" });
+            toast({ title: t("common.error"), description: result.error, variant: "destructive" });
         }
     };
 
@@ -148,7 +185,7 @@ export function ActiveGame({
         if (!success) {
             toast({
                 title: t("common.error"),
-                description: error || "Failed to propose bet",
+                description: error || t("game_room.active_game.failed_to_propose_bet"),
                 variant: "destructive",
             });
             return;
@@ -156,7 +193,7 @@ export function ActiveGame({
 
         toast({
             title: t("common.success"),
-            description: "Bet proposed",
+            description: t("game_room.active_game.bet_proposed"),
         });
     };
 
@@ -170,7 +207,7 @@ export function ActiveGame({
         if (!success) {
             toast({
                 title: t("common.error"),
-                description: error || "Failed to accept bet",
+                description: error || t("game_room.active_game.failed_to_accept_bet"),
                 variant: "destructive",
             });
             return;
@@ -178,7 +215,7 @@ export function ActiveGame({
 
         toast({
             title: t("common.success"),
-            description: "Bet accepted",
+            description: t("game_room.active_game.bet_accepted"),
         });
         setNewBet("");
     };
@@ -415,8 +452,15 @@ export function ActiveGame({
                             </CardTitle>
 
                             <CardDescription>
-                                {isHost ? "You vs Guest" : "Host vs You"}
+                                {isHost ? t("game_room.active_game.you_vs_guest") : t("game_room.active_game.host_vs_you")}
                             </CardDescription>
+
+                            <div className="text-sm text-muted-foreground">
+                                {t("game_room.mmc_balance")}:{" "}
+                                <span className="font-medium text-foreground">
+                                    {mmcBalance == null ? "—" : `${mmcBalance.toLocaleString()} MMC`}
+                                </span>
+                            </div>
                         </CardHeader>
                     </div>
 
@@ -479,7 +523,7 @@ export function ActiveGame({
                                     {canNegotiateBetNow && (
                                         <div className="rounded-xl border border-stone-200 dark:border-stone-800 p-4 space-y-3">
                                             <div className="text-sm font-medium">
-                                                Apuesta (MMC)
+                                                {t("game_room.active_game.bet_amount_mmc")}
                                             </div>
 
                                             {!hasPendingBetProposal ? (
@@ -501,26 +545,26 @@ export function ActiveGame({
                                                         onClick={handleProposeNewBet}
                                                         disabled={isBetSubmitting || newBet === "" || Number(newBet) <= 0}
                                                     >
-                                                        {isBetSubmitting ? t("common.loading") : "Proponer"}
+                                                        {isBetSubmitting ? t("common.loading") : t("game_room.active_game.propose_button")}
                                                     </Button>
                                                 </div>
                                             ) : (
                                                 <div className="rounded-lg border border-amber-500/60 bg-amber-500/10 p-3 text-sm space-y-2">
                                                     {iProposedBet ? (
                                                         <p className="text-amber-200">
-                                                            Propuesta enviada: {(game as any).next_bet_amount} MMC (esperando aceptación)
+                                                            {t("game_room.bet_change.pending_for_other", { amount: (game as any).next_bet_amount })}
                                                         </p>
                                                     ) : (
                                                         <>
                                                             <p className="text-amber-200">
-                                                                Propuesta recibida: {(game as any).next_bet_amount} MMC
+                                                                {t("game_room.bet_change.pending_for_you", { amount: (game as any).next_bet_amount })}
                                                             </p>
                                                             <Button
                                                                 size="sm"
                                                                 onClick={handleAcceptNewBet}
                                                                 disabled={isBetSubmitting}
                                                             >
-                                                                {isBetSubmitting ? t("common.loading") : "Aceptar"}
+                                                                {isBetSubmitting ? t("common.loading") : t("game_room.active_game.accept_button")}
                                                             </Button>
                                                         </>
                                                     )}
@@ -528,7 +572,7 @@ export function ActiveGame({
                                             )}
 
                                             <div className="text-xs text-muted-foreground">
-                                                Deben acordar la apuesta antes de jugar.
+                                                {t("game_room.active_game.bet_help")}
                                             </div>
                                         </div>
                                     )}
@@ -548,7 +592,7 @@ export function ActiveGame({
                                             transition={{ duration: 0.5, delay: 0.3 }}
                                         >
                                             <div className="text-sm font-medium text-muted-foreground">
-                                                You
+                                                {t("game_room.active_game.you")}
                                             </div>
                                             <motion.div
                                                 className={cn(
@@ -584,7 +628,7 @@ export function ActiveGame({
                                                 stiffness: 400,
                                             }}
                                         >
-                                            VS
+                                            {t("game_room.active_game.vs")}
                                         </motion.div>
 
                                         {/* Opponent Move */}
@@ -595,7 +639,7 @@ export function ActiveGame({
                                             transition={{ duration: 0.5, delay: 0.5 }}
                                         >
                                             <div className="text-sm font-medium text-muted-foreground">
-                                                Opponent
+                                                {t("game_room.active_game.opponent")}
                                             </div>
                                             <motion.div
                                                 className={cn(

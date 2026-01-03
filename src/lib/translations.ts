@@ -189,7 +189,7 @@ export const translations = {
       place_sell_order: "Place Sell Order",
       no_active_orders: "No active orders",
       my_holdings: "Your holdings for {{ticker}}",
-      
+
       tabs: {
         buy: "Buy",
         sell: "Sell",
@@ -398,7 +398,7 @@ export const translations = {
       },
       equity_exchange: {
         title: "Exchange Equity for MMC",
-        description: "Trade 1% of your personal token supply for 1,000,000 MMC.",
+        description: "Trade 1% of user's personal token supply for 1,000,000 MMC.",
         button: "Get 1,000,000 MMC",
         cost: "Cost: 1% of your Token Supply",
         warning: "Warning: There is NO cash out for MMC. This is for gaming only.",
@@ -425,6 +425,22 @@ export const translations = {
         pending_for_other: "Waiting for the other player to accept your new bet of {{amount}} MMC",
         pending_for_you: "Your opponent proposes a new bet of {{amount}} MMC",
         accept_button: "Accept new bet"
+      },
+      active_game: {
+        bet_amount_mmc: "Bet (MMC)",
+        bet_help: "Both players must agree on the bet before playing.",
+        propose_button: "Propose",
+        accept_button: "Accept",
+        move_submitted: "Move submitted successfully",
+        bet_proposed: "Bet proposed",
+        bet_accepted: "Bet accepted",
+        failed_to_propose_bet: "Failed to propose bet",
+        failed_to_accept_bet: "Failed to accept bet",
+        you_vs_guest: "You vs Guest",
+        host_vs_you: "Host vs You",
+        you: "You",
+        opponent: "Opponent",
+        vs: "VS"
       }
     },
 
@@ -631,7 +647,7 @@ export const translations = {
       place_sell_order: "Colocar Orden de Venta",
       no_active_orders: "No hay órdenes activas",
       my_holdings: "Tus tenencias de {{ticker}}",
-      
+
       tabs: {
         buy: "Comprar",
         sell: "Vender",
@@ -867,6 +883,22 @@ export const translations = {
         pending_for_other: "Esperando que el otro jugador acepte tu nueva apuesta de {{amount}} MMC",
         pending_for_you: "Tu oponente propone una nueva apuesta de {{amount}} MMC",
         accept_button: "Aceptar nueva apuesta"
+      },
+      active_game: {
+        bet_amount_mmc: "Apuesta (MMC)",
+        bet_help: "Deben acordar la apuesta antes de jugar.",
+        propose_button: "Proponer",
+        accept_button: "Aceptar",
+        move_submitted: "Jugada enviada correctamente",
+        bet_proposed: "Apuesta propuesta",
+        bet_accepted: "Apuesta aceptada",
+        failed_to_propose_bet: "No se pudo proponer la apuesta",
+        failed_to_accept_bet: "No se pudo aceptar la apuesta",
+        you_vs_guest: "Tú vs Invitado",
+        host_vs_you: "Anfitrión vs Tú",
+        you: "Tú",
+        opponent: "Oponente",
+        vs: "VS"
       }
     },
 
