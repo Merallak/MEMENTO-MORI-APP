@@ -8,15 +8,6 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogFooter,
-    DialogTrigger,
-    DialogDescription,
-} from "@/components/ui/dialog";
 import { GameService, type GameMove, type RPSGame } from "@/services/gameService";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -59,9 +50,6 @@ export function ActiveGame({
     // Bet negotiation state (only used when bet_amount is not set yet)
     const [newBet, setNewBet] = useState<number | "">("");
     const [isBetSubmitting, setIsBetSubmitting] = useState(false);
-
-    // Persistent leave confirmation
-    const [leaveOpen, setLeaveOpen] = useState(false);
 
     // Evitar closures “viejos” en callbacks
     const gameRef = useRef(game);
@@ -190,11 +178,6 @@ export function ActiveGame({
         } else if (result.error) {
             toast({ title: t("common.error"), description: result.error, variant: "destructive" });
         }
-    };
-
-    const handleLeaveConfirmed = async () => {
-        setLeaveOpen(false);
-        await handleForfeit();
     };
 
     const handleProposeNewBet = async () => {
@@ -455,40 +438,6 @@ export function ActiveGame({
                         "border-blue-500/50 bg-blue-50/50 dark:border-blue-400/30 dark:bg-blue-950/20"
                     )}
                 >
-                    {/* Persistent leave button (always visible inside ActiveGame) */}
-                    <Dialog open={leaveOpen} onOpenChange={setLeaveOpen}>
-                        <div className="absolute right-4 top-4 z-20">
-                            <DialogTrigger asChild>
-                                <Button variant="outline" size="sm" disabled={loading}>
-                                    <LogOut className="w-4 h-4 mr-2" />
-                                    {t("game_room.actions.leave_game")}
-                                </Button>
-                            </DialogTrigger>
-                        </div>
-
-                        <DialogContent>
-                            <DialogHeader>
-                                <DialogTitle>{t("game_room.actions.leave_confirm_title")}</DialogTitle>
-                                <DialogDescription>
-                                    {t("game_room.actions.leave_confirm_desc")}
-                                </DialogDescription>
-                            </DialogHeader>
-
-                            <DialogFooter>
-                                <Button
-                                    variant="outline"
-                                    onClick={() => setLeaveOpen(false)}
-                                    disabled={loading}
-                                >
-                                    {t("common.cancel")}
-                                </Button>
-                                <Button onClick={handleLeaveConfirmed} disabled={loading}>
-                                    {loading ? t("common.loading") : t("common.confirm")}
-                                </Button>
-                            </DialogFooter>
-                        </DialogContent>
-                    </Dialog>
-
                     <div className="text-center pb-2">
                         <CardHeader>
                             <Badge
