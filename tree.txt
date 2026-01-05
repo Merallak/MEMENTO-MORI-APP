@@ -21,6 +21,7 @@ public/MEMENTO_MORI_APP_4.jpeg
 public/favicon.ico
 public/grid.svg
 public/manifest.json
+public/sw.js
 src/components/AuthModal.tsx
 src/components/ChatBot.tsx
 src/components/GameRoom/ActiveGame.tsx
