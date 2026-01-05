@@ -15,6 +15,7 @@ next.config.mjs
 package-lock.json
 package.json
 postcss.config.mjs
+public/.well-known/assetlinks.json
 public/192.png
 public/512.png
 public/MEMENTO_MORI_APP_4.jpeg
