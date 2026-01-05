@@ -1,6 +1,12 @@
 import { useState, useEffect } from "react";
 import { DataService, Token } from "@/lib/dataService";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, Users, Coins, TrendingUp } from "lucide-react";
@@ -9,7 +15,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export function MarketOverview() {
-  const { language, t } = useLanguage();
+  const { t } = useLanguage();
   const [tokens, setTokens] = useState<Token[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [stats, setStats] = useState({ users: 0, tokens: 0, marketCap: 0 });
@@ -23,14 +29,14 @@ export function MarketOverview() {
     try {
       const allTokens = await DataService.getAllTokens();
       setTokens(allTokens);
-      
-      const uniqueUsers = new Set(allTokens.map(t => t.issuer_id)).size;
-      const totalMarketCap = allTokens.reduce((sum, t) => sum + t.market_cap, 0);
-      
+
+      const uniqueUsers = new Set(allTokens.map((tok) => tok.issuer_id)).size;
+      const totalMarketCap = allTokens.reduce((sum, tok) => sum + tok.market_cap, 0);
+
       setStats({
         users: uniqueUsers,
         tokens: allTokens.length,
-        marketCap: totalMarketCap
+        marketCap: totalMarketCap,
       });
     } catch (error) {
       console.error("Failed to load market data", error);
@@ -39,9 +45,10 @@ export function MarketOverview() {
     }
   };
 
-  const filteredTokens = tokens.filter(token =>
-    token.ticker.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    token.name.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredTokens = tokens.filter(
+    (token) =>
+      token.ticker.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      token.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -53,9 +60,12 @@ export function MarketOverview() {
       >
         <Card className="border-border/50 bg-card shadow-lg">
           <CardHeader>
-            <CardTitle className="text-2xl font-bold">{t("market.title")}</CardTitle>
+            <CardTitle className="text-2xl font-bold">
+              {t("market.title")}
+            </CardTitle>
             <CardDescription>{t("landing.description")}</CardDescription>
           </CardHeader>
+
           <CardContent className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <motion.div
@@ -66,7 +76,9 @@ export function MarketOverview() {
               >
                 <Users className="w-8 h-8 text-primary" />
                 <div>
-                  <p className="text-sm text-muted-foreground">{t("landing.stats.users")}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {t("landing.stats.users")}
+                  </p>
                   <p className="text-2xl font-bold">{stats.users}</p>
                 </div>
               </motion.div>
@@ -79,7 +91,9 @@ export function MarketOverview() {
               >
                 <Coins className="w-8 h-8 text-primary" />
                 <div>
-                  <p className="text-sm text-muted-foreground">{t("landing.stats.tokens")}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {t("landing.stats.tokens")}
+                  </p>
                   <p className="text-2xl font-bold">{stats.tokens}</p>
                 </div>
               </motion.div>
@@ -92,8 +106,15 @@ export function MarketOverview() {
               >
                 <TrendingUp className="w-8 h-8 text-primary" />
                 <div>
-                  <p className="text-sm text-muted-foreground">{t("landing.stats.market_cap")}</p>
-                  <p className="text-2xl font-bold">${stats.marketCap.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {t("landing.stats.market_cap")}
+                  </p>
+                  <p className="text-2xl font-bold">
+                    $
+                    {stats.marketCap.toLocaleString(undefined, {
+                      maximumFractionDigits: 0,
+                    })}
+                  </p>
                 </div>
               </motion.div>
             </div>
@@ -110,7 +131,9 @@ export function MarketOverview() {
             </div>
 
             {loading ? (
-               <div className="text-center py-12 text-muted-foreground">{t("common.loading")}</div>
+              <div className="text-center py-12 text-muted-foreground">
+                {t("common.loading")}
+              </div>
             ) : filteredTokens.length === 0 ? (
               <motion.div
                 initial={{ opacity: 0 }}
@@ -130,38 +153,59 @@ export function MarketOverview() {
                     whileHover={{ scale: 1.02, y: -5 }}
                     className="group"
                   >
-                    <Card key={token.id} className="overflow-hidden hover:shadow-lg transition-shadow border-border/50 bg-card">
+                    <Card className="overflow-hidden hover:shadow-lg transition-shadow border-border/50 bg-card">
                       <CardHeader className="pb-2">
                         <div className="flex justify-between items-start">
                           <div className="flex items-center gap-3">
                             <Avatar className="w-12 h-12 border-2 border-background shadow-sm">
-                              <AvatarImage src={token.image_url || ""} className="object-cover" />
+                              <AvatarImage
+                                src={token.image_url || ""}
+                                className="object-cover"
+                              />
                               <AvatarFallback className="text-lg bg-primary/10 text-primary font-bold">
                                 {token.ticker.substring(0, 2)}
                               </AvatarFallback>
                             </Avatar>
                             <div>
-                              <CardTitle className="text-xl font-display">{token.ticker}</CardTitle>
-                              <div className="text-sm text-muted-foreground">{token.name}</div>
+                              <CardTitle className="text-xl font-display">
+                                {token.ticker}
+                              </CardTitle>
+                              <div className="text-sm text-muted-foreground">
+                                {token.name}
+                              </div>
                             </div>
                           </div>
                         </div>
                       </CardHeader>
+
                       <CardContent className="space-y-3">
                         <div className="space-y-2 text-sm">
                           <div className="flex justify-between">
-                            <span className="text-muted-foreground">{t("issue.net_worth")}</span>
-                            <span className="font-semibold">${token.net_worth.toLocaleString()}</span>
+                            <span className="text-muted-foreground">
+                              {t("issue.net_worth")}
+                            </span>
+                            <span className="font-semibold">
+                              ${token.net_worth.toLocaleString()}
+                            </span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-muted-foreground">{t("market.price")}</span>
-                            <span className="font-semibold text-primary">${token.current_price.toFixed(2)}</span>
+                            <span className="text-muted-foreground">
+                              {t("market.price")}
+                            </span>
+                            <span className="font-semibold text-primary">
+                              ${token.current_price.toFixed(2)}
+                            </span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-muted-foreground">{t("issue.total_supply")}</span>
-                            <span className="font-semibold">{token.total_supply.toLocaleString()}</span>
+                            <span className="text-muted-foreground">
+                              {t("issue.total_supply")}
+                            </span>
+                            <span className="font-semibold">
+                              {token.total_supply.toLocaleString()}
+                            </span>
                           </div>
                         </div>
+
                         <Button className="w-full" variant="default">
                           {t("trading.tabs.buy")}
                         </Button>

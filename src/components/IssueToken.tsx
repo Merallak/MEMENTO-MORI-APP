@@ -30,6 +30,8 @@ export function IssueToken() {
   const { t } = useLanguage();
   const { user } = useAuth();
 
+  const MAX_IMAGE_MB = 2;
+
   // Check if user already has a token
   useEffect(() => {
     const checkExistingToken = async () => {
@@ -64,10 +66,10 @@ export function IssueToken() {
     if (!file) return;
 
     // Validación básica en cliente
-    if (file.size > 2 * 1024 * 1024) {
+    if (file.size > MAX_IMAGE_MB * 1024 * 1024) {
       toast({
-        title: t("error"),
-        description: "La imagen es demasiado grande. Máximo 2MB.",
+        title: t("common.error"),
+        description: t("issue.image_too_large", { maxMb: MAX_IMAGE_MB }),
         variant: "destructive",
       });
       return;
@@ -89,7 +91,7 @@ export function IssueToken() {
 
     if (!user) {
       toast({
-        title: t("error"),
+        title: t("common.error"),
         description: t("mustBeLoggedIn"),
         variant: "destructive",
       });
@@ -107,8 +109,8 @@ export function IssueToken() {
 
         if (!uploadResult.success) {
           toast({
-            title: t("error"),
-            description: uploadResult.error || "Error al subir la imagen",
+            title: t("common.error"),
+            description: uploadResult.error || t("issue.image_upload_failed"),
             variant: "destructive",
           });
           setIsSubmitting(false);
@@ -129,13 +131,13 @@ export function IssueToken() {
 
         if (result) {
           toast({
-            title: t("success"),
+            title: t("common.success"),
             description: t("tokenUpdatedSuccess"),
           });
           setExistingToken(result);
         } else {
           toast({
-            title: t("error"),
+            title: t("common.error"),
             description: t("tokenUpdateFailed"),
             variant: "destructive",
           });
@@ -155,13 +157,13 @@ export function IssueToken() {
 
         if (result) {
           toast({
-            title: t("success"),
+            title: t("common.success"),
             description: t("tokenIssuedSuccess"),
           });
           setExistingToken(result);
         } else {
           toast({
-            title: t("error"),
+            title: t("common.error"),
             description: t("tokenIssueFailed"),
             variant: "destructive",
           });
@@ -170,7 +172,7 @@ export function IssueToken() {
     } catch (error) {
       console.error("Error issuing/updating token:", error);
       toast({
-        title: t("error"),
+        title: t("common.error"),
         description: t("unexpectedError"),
         variant: "destructive",
       });
@@ -201,7 +203,7 @@ export function IssueToken() {
             <Label htmlFor="ticker">{t("market.ticker")}</Label>
             <Input
               id="ticker"
-              placeholder="e.g., ELON"
+              placeholder={t("issue.placeholders.ticker_example")}
               value={formData.ticker}
               onChange={(e) => handleInputChange("ticker", e.target.value.toUpperCase())}
               disabled={!!existingToken}
@@ -215,7 +217,7 @@ export function IssueToken() {
             <Label htmlFor="name">{t("issue.token_name")}</Label>
             <Input
               id="name"
-              placeholder="e.g., Elon Musk Personal Token"
+              placeholder={t("issue.placeholders.name_example")}
               value={formData.name}
               onChange={(e) => handleInputChange("name", e.target.value)}
               required
@@ -280,7 +282,7 @@ export function IssueToken() {
                 className="cursor-pointer"
               />
               <p className="text-xs text-muted-foreground">
-                {t("issue.image_hint")} (JPG, PNG, WebP, GIF. Max 2MB)
+                {t("issue.image_formats_hint", { maxMb: MAX_IMAGE_MB })}
               </p>
 
               {/* Preview */}
@@ -288,7 +290,7 @@ export function IssueToken() {
                 <div className="mt-3">
                   <img
                     src={imagePreview}
-                    alt="Preview"
+                    alt=""
                     className="w-32 h-32 object-cover rounded-lg border-2 border-border"
                   />
                 </div>
@@ -302,7 +304,7 @@ export function IssueToken() {
               <Input
                 id="token-image-url"
                 type="url"
-                placeholder="https://example.com/image.png"
+                placeholder={t("issue.placeholders.image_url")}
                 value={formData.image_url}
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, image_url: e.target.value }))
@@ -312,7 +314,7 @@ export function IssueToken() {
                 <div className="mt-3">
                   <img
                     src={formData.image_url}
-                    alt="Preview"
+                    alt=""
                     className="w-32 h-32 object-cover rounded-lg border-2 border-border"
                     onError={(e) => {
                       e.currentTarget.src = "/placeholder-token.png";
@@ -331,7 +333,7 @@ export function IssueToken() {
               id="netWorth"
               type="number"
               step="0.01"
-              placeholder="1000000"
+              placeholder={t("issue.placeholders.net_worth")}
               value={formData.netWorth}
               onChange={(e) => handleInputChange("netWorth", e.target.value)}
               required
@@ -345,7 +347,7 @@ export function IssueToken() {
               id="totalSupply"
               type="number"
               step="1"
-              placeholder="1000000"
+              placeholder={t("issue.placeholders.total_supply")}
               value={formData.totalSupply}
               onChange={(e) => handleInputChange("totalSupply", e.target.value)}
               disabled={!!existingToken}
@@ -360,7 +362,7 @@ export function IssueToken() {
               id="basePrice"
               type="number"
               step="0.01"
-              placeholder="1.00"
+              placeholder={t("issue.placeholders.base_price")}
               value={formData.basePrice}
               onChange={(e) => handleInputChange("basePrice", e.target.value)}
               disabled={!!existingToken}
@@ -374,7 +376,8 @@ export function IssueToken() {
           <Alert>
             <TrendingUp className="h-4 w-4" />
             <AlertDescription>
-              {t("issue.initial_valuation")}: <strong>${initialValuation.toLocaleString()}</strong>
+              {t("issue.initial_valuation")}:{" "}
+              <strong>${initialValuation.toLocaleString()}</strong>
             </AlertDescription>
           </Alert>
         )}

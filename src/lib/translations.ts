@@ -15,6 +15,10 @@ export const translations = {
       required: "All fields are required",
     },
 
+    brand: {
+      protocol: "Memento Mori Protocol",
+    },
+
     nav: {
       market: "Market",
       issue: "Issue Token",
@@ -157,6 +161,9 @@ export const translations = {
       upload_file: "Upload File",
       paste_url: "Paste URL",
       image_hint: "Choose an image for your token",
+      image_formats_hint: "Choose an image for your token (JPG, PNG, WebP, GIF. Max {{maxMb}}MB)",
+      image_too_large: "The image is too large. Max {{maxMb}}MB.",
+      image_upload_failed: "Error uploading image",
       description: "Description",
       description_placeholder: "Tell people about your token...",
       initial_valuation: "Initial Market Cap",
@@ -164,6 +171,14 @@ export const translations = {
       net_worth_label: "Net Worth ($)",
       total_supply_label: "Total Supply",
       initial_price_label: "Initial Price ($)",
+      placeholders: {
+        ticker_example: "e.g., ELON",
+        name_example: "e.g., Elon Musk Personal Token",
+        image_url: "https://example.com/image.png",
+        net_worth: "1000000",
+        total_supply: "1000000",
+        base_price: "1.00",
+      },
     },
 
     portfolio: {
@@ -182,6 +197,20 @@ export const translations = {
       holdings_value: "Value",
       holdings_avg_price: "Average Price",
       balance: "Balance",
+      deposit_usd_button: "Deposit USD",
+      deposit_usd_title: "Deposit USD",
+      deposit_usd_desc: "Enter the amount you want to deposit",
+      amount_usd_label: "Amount (USD)",
+      amount_usd_placeholder: "1000.00",
+      deposit_success: "${{amount}} deposited",
+      deposit_failed: "Deposit failed",
+      account_deleted: "Account deleted",
+      delete_failed: "Failed to delete account",
+      delete_not_allowed_title: "Cannot Delete Account",
+      delete_not_allowed_desc: "Holdings must be empty",
+      delete_irreversible: "This action cannot be undone.",
+      delete_confirm_word: "DELETE",
+      delete_type_instruction: "Type {{word}}",
     },
 
     trading: {
@@ -216,6 +245,11 @@ export const translations = {
         you_pay: "You Pay",
         you_receive: "You Receive",
         slippage: "Slippage Tolerance",
+      },
+
+      placeholders: {
+        amount: "0.00",
+        price: "0.00",
       },
 
       buttons: {
@@ -257,6 +291,21 @@ export const translations = {
         swap: "Swap successful",
       },
 
+      errors: {
+        transaction_failed: "Failed to complete transaction",
+      },
+
+      order: {
+        cancel_success: "Order cancelled successfully",
+        cancel_failed: "Failed to cancel order",
+      },
+
+      chart: {
+        loading_history: "Loading price history...",
+        no_history: "No price history available yet",
+        pair_usd: "{{ticker}} / USD",
+      },
+
       swap: {
         title: "Swap Tokens",
         subtitle: "Trade {ticker} for other tokens",
@@ -273,6 +322,9 @@ export const translations = {
         your_offer: "Your Offer",
         cancel: "Cancel Offer",
         success_msg: "Swap executed successfully!",
+        offer_created: "Swap offer created successfully",
+        offer_create_failed: "Failed to create swap offer",
+        failed: "Swap failed",
       },
     },
 
@@ -282,6 +334,7 @@ export const translations = {
       scan_pay: "Scan & Pay",
       token: "Token",
       amount: "Amount",
+      amount_placeholder: "100.00",
       recipient: "Recipient Address",
       generate_qr: "Generate QR Code",
       scan_qr: "Scan QR Code",
@@ -297,6 +350,7 @@ export const translations = {
       scan_to_pay: "Scan this code to receive payment",
       error_invalid_qr: "Invalid QR code",
       error_camera: "Camera access denied",
+      insufficient_balance: "Insufficient balance",
     },
 
     orderBook: {
@@ -500,6 +554,10 @@ export const translations = {
       required: "Todos los campos son requeridos",
     },
 
+    brand: {
+      protocol: "Memento Mori Protocol",
+    },
+
     nav: {
       market: "Mercado",
       issue: "Emitir Ficha",
@@ -645,6 +703,9 @@ export const translations = {
       upload_file: "Subir Archivo",
       paste_url: "Pegar URL",
       image_hint: "Elige una imagen para tu token",
+      image_formats_hint: "Elige una imagen para tu token (JPG, PNG, WebP, GIF. Máx {{maxMb}}MB)",
+      image_too_large: "La imagen es demasiado grande. Máximo {{maxMb}}MB.",
+      image_upload_failed: "Error al subir la imagen",
       description: "Descripción",
       description_placeholder: "Cuéntale a la gente sobre tu token...",
       initial_valuation: "Capitalización Inicial",
@@ -652,6 +713,14 @@ export const translations = {
       net_worth_label: "Patrimonio Neto ($)",
       total_supply_label: "Suministro Total",
       initial_price_label: "Precio Inicial ($)",
+      placeholders: {
+        ticker_example: "ej., ELON",
+        name_example: "ej., Token personal de Elon Musk",
+        image_url: "https://example.com/image.png",
+        net_worth: "1000000",
+        total_supply: "1000000",
+        base_price: "1.00",
+      },
     },
 
     portfolio: {
@@ -670,6 +739,20 @@ export const translations = {
       holdings_value: "Valor",
       holdings_avg_price: "Precio Promedio",
       balance: "Balance",
+      deposit_usd_button: "Depositar USD",
+      deposit_usd_title: "Depositar USD",
+      deposit_usd_desc: "Ingresa el monto que deseas depositar",
+      amount_usd_label: "Cantidad (USD)",
+      amount_usd_placeholder: "1000.00",
+      deposit_success: "Depositaste ${{amount}}",
+      deposit_failed: "Depósito fallido",
+      account_deleted: "Cuenta eliminada",
+      delete_failed: "No se pudo eliminar la cuenta",
+      delete_not_allowed_title: "No se puede eliminar la cuenta",
+      delete_not_allowed_desc: "Debes tener tus tenencias en cero",
+      delete_irreversible: "Esta acción no se puede deshacer.",
+      delete_confirm_word: "DELETE",
+      delete_type_instruction: "Escribe {{word}}",
     },
 
     trading: {
@@ -704,6 +787,11 @@ export const translations = {
         you_pay: "Pagas",
         you_receive: "Recibes",
         slippage: "Tolerancia al Deslizamiento",
+      },
+
+      placeholders: {
+        amount: "0.00",
+        price: "0.00",
       },
 
       buttons: {
@@ -744,6 +832,21 @@ export const translations = {
         sell: "Venta exitosa",
         swap: "Intercambio exitoso",
       },
+      
+      errors: {
+        transaction_failed: "No se pudo completar la transacción",
+      },
+
+      order: {
+        cancel_success: "Orden cancelada correctamente",
+        cancel_failed: "No se pudo cancelar la orden",
+      },
+      
+      chart: {
+        loading_history: "Cargando historial de precio...",
+        no_history: "Aún no hay historial de precio disponible",
+        pair_usd: "{{ticker}} / USD",
+      },
 
       swap: {
         title: "Intercambiar Tokens",
@@ -761,6 +864,9 @@ export const translations = {
         your_offer: "Tu Oferta",
         cancel: "Cancelar Oferta",
         success_msg: "¡Intercambio realizado con éxito!",
+        offer_created: "Oferta de intercambio creada correctamente",
+        offer_create_failed: "No se pudo crear la oferta de intercambio",
+        failed: "El intercambio falló",
       },
     },
 
@@ -770,6 +876,7 @@ export const translations = {
       scan_pay: "Escanear y Pagar",
       token: "Ficha",
       amount: "Cantidad",
+      amount_placeholder: "100.00",
       recipient: "Dirección del Destinatario",
       generate_qr: "Generar Código QR",
       scan_qr: "Escanear Código QR",
@@ -786,6 +893,7 @@ export const translations = {
       scan_to_pay: "Escanea este código para recibir el pago",
       error_invalid_qr: "Código QR inválido",
       error_camera: "Acceso a cámara denegado",
+      insufficient_balance: "Saldo insuficiente",
     },
 
     orderBook: {
@@ -974,7 +1082,7 @@ export const translations = {
       conversion_failed: "Error en conversión",
     },
   },
-};
+} as const;
 
-export type TranslationKeys = typeof translations.en;
+export type TranslationSchema = typeof translations.en;
 export type Translations = typeof translations;
