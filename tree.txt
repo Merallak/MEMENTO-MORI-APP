@@ -22,6 +22,8 @@ public/1000033745.png
 public/1000033747.png
 public/1000033748.jpg
 public/1000033749.png
+public/192.png
+public/512.png
 public/MEMENTO_MORI_APP_4.jpeg
 public/SHARE_IMAGEN.png
 public/favicon.ico
