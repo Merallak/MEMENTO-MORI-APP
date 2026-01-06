@@ -24,12 +24,14 @@ export function ChatBot() {
   const { language, t } = useLanguage();
   const { user } = useAuth();
 
+  // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
 
+  // Welcome message on first open
   useEffect(() => {
     if (isOpen && messages.length === 0) {
       setMessages([
@@ -40,7 +42,7 @@ export function ChatBot() {
         },
       ]);
     }
-  }, [isOpen]); // diff mínimo (sin tocar deps)
+  }, [isOpen]);
 
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return;
@@ -68,11 +70,13 @@ export function ChatBot() {
     setIsLoading(true);
 
     try {
+      // Get user context (their tokens, holdings, etc)
       const userContext = {
         userId: user.id,
         email: user.email,
       };
 
+      // Call Edge Function
       const { data, error } = await supabase.functions.invoke("chat-assistant", {
         body: {
           message: input,
@@ -82,20 +86,28 @@ export function ChatBot() {
       });
 
       if (error) throw error;
-      if (data?.error) throw new Error(data.error);
+
+      if (data?.error) {
+        throw new Error(data.error);
+      }
 
       const aiResponse = data.message;
 
-      setMessages((prev) => [
-        ...prev,
-        { role: "assistant", content: aiResponse, timestamp: new Date() },
-      ]);
+      const assistantMessage: Message = {
+        role: "assistant",
+        content: aiResponse,
+        timestamp: new Date(),
+      };
+
+      setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
       console.error("Chat error:", error);
-      setMessages((prev) => [
-        ...prev,
-        { role: "assistant", content: t("chatbot.error"), timestamp: new Date() },
-      ]);
+      const errorMessage: Message = {
+        role: "assistant",
+        content: t("chatbot.error"),
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
     }
@@ -114,6 +126,7 @@ export function ChatBot() {
 
   return (
     <>
+      {/* Floating Button */}
       <motion.div
         className="fixed bottom-6 right-6 z-50"
         initial={{ scale: 0 }}
@@ -151,6 +164,7 @@ export function ChatBot() {
         </Button>
       </motion.div>
 
+      {/* Chat Window */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -161,6 +175,7 @@ export function ChatBot() {
             className="fixed bottom-24 right-6 z-50 w-96 max-w-[calc(100vw-3rem)]"
           >
             <Card className="flex flex-col h-[600px] max-h-[80vh] shadow-2xl bg-card border-border">
+              {/* Header */}
               <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-primary/10 to-primary/5">
                 <div className="flex items-center gap-2">
                   <Sparkles className="h-5 w-5 text-primary" />
@@ -176,6 +191,7 @@ export function ChatBot() {
                 </Button>
               </div>
 
+              {/* Messages */}
               <ScrollArea className="flex-1 p-4" ref={scrollRef}>
                 <div className="space-y-4">
                   {messages.map((message, index) => (
@@ -206,6 +222,7 @@ export function ChatBot() {
                     </motion.div>
                   ))}
 
+                  {/* Typing Indicator */}
                   {isLoading && (
                     <motion.div
                       initial={{ opacity: 0 }}
@@ -235,6 +252,7 @@ export function ChatBot() {
                   )}
                 </div>
 
+                {/* Example Questions (only show when no messages) */}
                 {messages.length === 1 && messages[0].role === "assistant" && (
                   <motion.div
                     initial={{ opacity: 0 }}
@@ -252,4 +270,41 @@ export function ChatBot() {
                           variant="outline"
                           size="sm"
                           className="w-full justify-start text-left h-auto py-2"
-                          onClick={() => sendExample(q<span class="ml-2" /><span class="inline-block w-3 h-3 rounded-full bg-neutral-a12 align-middle mb-[0.1rem]" />
+                          onClick={() => sendExample(q)}
+                        >
+                          <span className="text-xs">{q}</span>
+                        </Button>
+                      )
+                    )}
+                  </motion.div>
+                )}
+              </ScrollArea>
+
+              {/* Input */}
+              <div className="p-4 border-t">
+                <div className="flex gap-2">
+                  <Textarea
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    placeholder={user ? t("chatbot.placeholder") : t("mustBeLoggedIn")}
+                    className="min-h-[60px] resize-none"
+                    disabled={isLoading || !user}
+                  />
+                  <Button
+                    onClick={sendMessage}
+                    disabled={!user || !input.trim() || isLoading}
+                    size="icon"
+                    className="h-[60px] w-[60px] shrink-0"
+                  >
+                    <Send className="h-5 w-5" />
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
+  );
+}
