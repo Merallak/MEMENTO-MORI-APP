@@ -109,6 +109,7 @@ supabase/.temp/postgres-version
 supabase/.temp/project-ref
 supabase/.temp/rest-version
 supabase/.temp/storage-version
+supabase/functions/chat-assistant/config.toml
 supabase/functions/chat-assistant/index.ts
 supabase/migrations/20251226094522_migration_d48cc772.sql
 supabase/migrations/20251226094719_migration_68f6e8d1.sql
