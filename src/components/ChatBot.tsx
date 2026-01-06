@@ -76,12 +76,33 @@ export function ChatBot() {
         email: user.email,
       };
 
+      // Ensure we send a valid JWT to the Edge Function (avoids 401)
+      const { data: sessionData, error: sessionError } =
+        await supabase.auth.getSession();
+      if (sessionError) throw sessionError;
+
+      const accessToken = sessionData.session?.access_token;
+      if (!accessToken) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            content: t("mustBeLoggedIn"),
+            timestamp: new Date(),
+          },
+        ]);
+        return;
+      }
+
       // Call Edge Function
       const { data, error } = await supabase.functions.invoke("chat-assistant", {
         body: {
           message: input,
           language,
           userContext,
+        },
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
         },
       });
 
@@ -211,7 +232,9 @@ export function ChatBot() {
                             : "bg-muted"
                         }`}
                       >
-                        <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                        <p className="text-sm whitespace-pre-wrap">
+                          {message.content}
+                        </p>
                         <p className="text-xs opacity-50 mt-1">
                           {message.timestamp.toLocaleTimeString([], {
                             hour: "2-digit",
@@ -234,17 +257,29 @@ export function ChatBot() {
                           <motion.div
                             className="w-2 h-2 bg-foreground/40 rounded-full"
                             animate={{ scale: [1, 1.2, 1] }}
-                            transition={{ repeat: Infinity, duration: 1, delay: 0 }}
+                            transition={{
+                              repeat: Infinity,
+                              duration: 1,
+                              delay: 0,
+                            }}
                           />
                           <motion.div
                             className="w-2 h-2 bg-foreground/40 rounded-full"
                             animate={{ scale: [1, 1.2, 1] }}
-                            transition={{ repeat: Infinity, duration: 1, delay: 0.2 }}
+                            transition={{
+                              repeat: Infinity,
+                              duration: 1,
+                              delay: 0.2,
+                            }}
                           />
                           <motion.div
                             className="w-2 h-2 bg-foreground/40 rounded-full"
                             animate={{ scale: [1, 1.2, 1] }}
-                            transition={{ repeat: Infinity, duration: 1, delay: 0.4 }}
+                            transition={{
+                              repeat: Infinity,
+                              duration: 1,
+                              delay: 0.4,
+                            }}
                           />
                         </div>
                       </div>
@@ -263,19 +298,21 @@ export function ChatBot() {
                     <p className="text-xs text-muted-foreground mb-2">
                       {t("chatbot.examples_label")}
                     </p>
-                    {[t("chatbot.example1"), t("chatbot.example2"), t("chatbot.example3")].map(
-                      (q, i) => (
-                        <Button
-                          key={i}
-                          variant="outline"
-                          size="sm"
-                          className="w-full justify-start text-left h-auto py-2"
-                          onClick={() => sendExample(q)}
-                        >
-                          <span className="text-xs">{q}</span>
-                        </Button>
-                      )
-                    )}
+                    {[
+                      t("chatbot.example1"),
+                      t("chatbot.example2"),
+                      t("chatbot.example3"),
+                    ].map((q, i) => (
+                      <Button
+                        key={i}
+                        variant="outline"
+                        size="sm"
+                        className="w-full justify-start text-left h-auto py-2"
+                        onClick={() => sendExample(q)}
+                      >
+                        <span className="text-xs">{q}</span>
+                      </Button>
+                    ))}
                   </motion.div>
                 )}
               </ScrollArea>
