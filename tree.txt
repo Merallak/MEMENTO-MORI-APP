@@ -28,6 +28,7 @@ src/components/LanguageSwitch.tsx
 src/components/MarketOverview.tsx
 src/components/Payments.tsx
 src/components/Portfolio.tsx
+src/components/Profile.tsx
 src/components/SEO.tsx
 src/components/ThemeSwitch.tsx
 src/components/Trading.tsx
@@ -100,6 +101,7 @@ src/pages/index.tsx
 src/pages/update-password.tsx
 src/services/authService.ts
 src/services/gameService.ts
+src/services/profileService.ts
 src/services/storageService.ts
 src/styles/globals.css
 supabase/.temp/cli-latest

@@ -1,9 +1,9 @@
 /* Basic, conservative service worker for Next.js (Pages Router).
    Caches only safe static assets:
-   - /_next/static/* (hashed)
+   - /_next/static/* (hashed in prod; in dev can be non-hashed so we avoid caching on localhost)
    - selected public files (icons/manifest)
 */
-const CACHE_NAME = "mm-static-v1";
+const CACHE_NAME = "mm-static-v2";
 
 const ASSET_PATHS = new Set([
   "/192.png",
@@ -12,6 +12,10 @@ const ASSET_PATHS = new Set([
   "/manifest.json",
   "/grid.svg",
 ]);
+
+const IS_LOCALHOST =
+  self.location.hostname === "localhost" ||
+  self.location.hostname === "127.0.0.1";
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();
@@ -35,19 +39,19 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   const req = event.request;
 
-  // Only cache GET requests
   if (req.method !== "GET") return;
 
   const url = new URL(req.url);
 
-  // Only same-origin
   if (url.origin !== self.location.origin) return;
 
   const isNextStatic = url.pathname.startsWith("/_next/static/");
   const isAllowedPublicAsset = ASSET_PATHS.has(url.pathname);
 
+  // In dev, avoid caching Next static chunks (can change without URL changing)
+  if (IS_LOCALHOST && isNextStatic) return;
+
   if (!isNextStatic && !isAllowedPublicAsset) {
-    // Do not cache HTML or dynamic routes (network only)
     return;
   }
 
@@ -58,7 +62,6 @@ self.addEventListener("fetch", (event) => {
       if (cached) return cached;
 
       const res = await fetch(req);
-      // Cache only successful basic/cors responses
       if (res && (res.type === "basic" || res.type === "cors") && res.ok) {
         await cache.put(req, res.clone());
       }

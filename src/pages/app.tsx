@@ -14,6 +14,7 @@ import { Trading } from "@/components/Trading";
 import { Payments } from "@/components/Payments";
 import { ChatBot } from "@/components/ChatBot";
 import { GameRoom } from "@/components/GameRoom/GameRoom";
+import { Profile } from "@/components/Profile";
 import AuthModal from "@/components/AuthModal";
 import {
   Store,
@@ -24,6 +25,7 @@ import {
   ArrowLeft,
   LogOut,
   Swords,
+  User,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -49,7 +51,6 @@ export default function AppPage() {
 
   return (
     <div className="min-h-screen bg-stone-50 dark:bg-gradient-to-br dark:from-stone-950 dark:via-stone-900 dark:to-stone-950 transition-colors duration-300">
-      {/* Top Navigation Bar */}
       <header className="border-b border-stone-200 dark:border-stone-800/50 bg-white/80 dark:bg-stone-950/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -151,6 +152,14 @@ export default function AppPage() {
               <Swords className="mr-2 h-4 w-4" />
               {t("game_room.title")}
             </TabsTrigger>
+
+            <TabsTrigger
+              value="profile"
+              className="shrink-0 whitespace-nowrap data-[state=active]:bg-white dark:data-[state=active]:bg-amber-900/30 data-[state=active]:shadow-sm"
+            >
+              <User className="mr-2 h-4 w-4" />
+              {t("nav.profile")}
+            </TabsTrigger>
           </TabsList>
 
           <div className="mt-6">
@@ -220,13 +229,23 @@ export default function AppPage() {
                   <GameRoom />
                 </motion.div>
               </TabsContent>
+
+              <TabsContent value="profile" className="m-0 outline-none">
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <Profile />
+                </motion.div>
+              </TabsContent>
             </AnimatePresence>
           </div>
         </Tabs>
       </main>
 
       <ChatBot />
-
       <AuthModal open={showAuth} onOpenChange={setShowAuth} />
     </div>
   );
