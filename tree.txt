@@ -126,5 +126,6 @@ supabase/migrations/20260101091229_migration_d7675837.sql
 supabase/migrations/20260101093717_migration_f1bc3d3d.sql
 supabase/migrations/20260103000000_rebuild_rps.sql
 tailwind.config.ts
+tree.txt
 tsconfig.json
 vercel.json
