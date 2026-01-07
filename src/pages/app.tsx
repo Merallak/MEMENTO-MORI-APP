@@ -60,13 +60,13 @@ export default function AppPage() {
               <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden relative">
                 <Image
                   src="/MEMENTO_MORI_APP_4.jpeg"
-                  alt={t("brand.memento_mori")}
+                  alt={t("landing.title")}
                   fill
                   className="object-cover"
                 />
               </div>
               <span className="font-bold text-lg hidden sm:block">
-                {t("brand.memento_mori")}
+                {t("landing.title")}
               </span>
             </div>
           </div>
@@ -80,7 +80,6 @@ export default function AppPage() {
                   <span className="text-sm font-medium">{user.email}</span>
                   <span className="text-xs text-muted-foreground flex items-center gap-1">
                     <div className="h-2 w-2 rounded-full bg-green-500"></div>
-                    {t("common.connected")}
                   </span>
                 </div>
                 <Button
