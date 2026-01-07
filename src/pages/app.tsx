@@ -15,25 +15,34 @@ import { Payments } from "@/components/Payments";
 import { ChatBot } from "@/components/ChatBot";
 import { GameRoom } from "@/components/GameRoom/GameRoom";
 import AuthModal from "@/components/AuthModal";
-import { Store, PlusCircle, Wallet, TrendingUp, ArrowLeftRight, ArrowLeft, LogOut, Swords } from "lucide-react";
+import {
+  Store,
+  PlusCircle,
+  Wallet,
+  TrendingUp,
+  ArrowLeftRight,
+  ArrowLeft,
+  LogOut,
+  Swords,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function AppPage() {
   const { user, signOut, loading } = useAuth();
   const router = useRouter();
-  const { language, t } = useLanguage();
+  const { t } = useLanguage();
   const [showAuth, setShowAuth] = useState(false);
   const [activeTab, setActiveTab] = useState("market");
 
   useEffect(() => {
-    if (router.query.login === 'true' && !user) {
+    if (router.query.login === "true" && !user) {
       setShowAuth(true);
     }
   }, [router.query, user]);
 
   const handleSignOut = async () => {
     await signOut();
-    router.push('/');
+    router.push("/");
   };
 
   if (loading) return null;
@@ -44,14 +53,21 @@ export default function AppPage() {
       <header className="border-b border-stone-200 dark:border-stone-800/50 bg-white/80 dark:bg-stone-950/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => router.push('/')}>
+            <Button variant="ghost" size="icon" onClick={() => router.push("/")}>
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div className="flex items-center gap-2">
               <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden relative">
-                <Image src="/MEMENTO_MORI_APP_4.jpeg" alt="Memento Mori" fill className="object-cover" />
+                <Image
+                  src="/MEMENTO_MORI_APP_4.jpeg"
+                  alt={t("brand.memento_mori")}
+                  fill
+                  className="object-cover"
+                />
               </div>
-              <span className="font-bold text-lg hidden sm:block">MEMENTO MORI</span>
+              <span className="font-bold text-lg hidden sm:block">
+                {t("brand.memento_mori")}
+              </span>
             </div>
           </div>
 
@@ -64,45 +80,75 @@ export default function AppPage() {
                   <span className="text-sm font-medium">{user.email}</span>
                   <span className="text-xs text-muted-foreground flex items-center gap-1">
                     <div className="h-2 w-2 rounded-full bg-green-500"></div>
-                    Connected
+                    {t("common.connected")}
                   </span>
                 </div>
-                <Button variant="ghost" size="sm" onClick={handleSignOut} className="gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleSignOut}
+                  className="gap-2"
+                >
                   <LogOut className="w-4 h-4" />
-                  <span className="hidden sm:inline">{t('nav.logout')}</span>
+                  <span className="hidden sm:inline">{t("nav.logout")}</span>
                 </Button>
               </div>
             ) : (
-              <Button onClick={() => setShowAuth(true)}>{t('auth.sign_in')}</Button>
+              <Button onClick={() => setShowAuth(true)}>
+                {t("auth.sign_in")}
+              </Button>
             )}
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto p-6 max-w-7xl">
+      <main className="container mx-auto px-4 py-6 sm:p-6 max-w-7xl">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-6 bg-stone-100 dark:bg-stone-900/50 border border-stone-200 dark:border-stone-800/50">
-            <TabsTrigger value="market" className="data-[state=active]:bg-white dark:data-[state=active]:bg-amber-900/30 data-[state=active]:shadow-sm">
+          <TabsList className="w-full bg-stone-100 dark:bg-stone-900/50 border border-stone-200 dark:border-stone-800/50 flex flex-nowrap overflow-x-auto whitespace-nowrap justify-start">
+            <TabsTrigger
+              value="market"
+              className="shrink-0 whitespace-nowrap data-[state=active]:bg-white dark:data-[state=active]:bg-amber-900/30 data-[state=active]:shadow-sm"
+            >
               <Store className="mr-2 h-4 w-4" />
               {t("nav.market")}
             </TabsTrigger>
-            <TabsTrigger value="issue" className="data-[state=active]:bg-white dark:data-[state=active]:bg-amber-900/30 data-[state=active]:shadow-sm">
+
+            <TabsTrigger
+              value="issue"
+              className="shrink-0 whitespace-nowrap data-[state=active]:bg-white dark:data-[state=active]:bg-amber-900/30 data-[state=active]:shadow-sm"
+            >
               <PlusCircle className="mr-2 h-4 w-4" />
               {t("nav.issue")}
             </TabsTrigger>
-            <TabsTrigger value="portfolio" className="data-[state=active]:bg-white dark:data-[state=active]:bg-amber-900/30 data-[state=active]:shadow-sm">
+
+            <TabsTrigger
+              value="portfolio"
+              className="shrink-0 whitespace-nowrap data-[state=active]:bg-white dark:data-[state=active]:bg-amber-900/30 data-[state=active]:shadow-sm"
+            >
               <Wallet className="mr-2 h-4 w-4" />
               {t("nav.portfolio")}
             </TabsTrigger>
-            <TabsTrigger value="trading" className="data-[state=active]:bg-white dark:data-[state=active]:bg-amber-900/30 data-[state=active]:shadow-sm">
+
+            <TabsTrigger
+              value="trading"
+              className="shrink-0 whitespace-nowrap data-[state=active]:bg-white dark:data-[state=active]:bg-amber-900/30 data-[state=active]:shadow-sm"
+            >
               <TrendingUp className="mr-2 h-4 w-4" />
               {t("nav.trading")}
             </TabsTrigger>
-            <TabsTrigger value="payments" className="data-[state=active]:bg-white dark:data-[state=active]:bg-amber-900/30 data-[state=active]:shadow-sm">
+
+            <TabsTrigger
+              value="payments"
+              className="shrink-0 whitespace-nowrap data-[state=active]:bg-white dark:data-[state=active]:bg-amber-900/30 data-[state=active]:shadow-sm"
+            >
               <ArrowLeftRight className="mr-2 h-4 w-4" />
               {t("nav.payments")}
             </TabsTrigger>
-            <TabsTrigger value="gameroom" className="data-[state=active]:bg-white dark:data-[state=active]:bg-amber-900/30 data-[state=active]:shadow-sm">
+
+            <TabsTrigger
+              value="gameroom"
+              className="shrink-0 whitespace-nowrap data-[state=active]:bg-white dark:data-[state=active]:bg-amber-900/30 data-[state=active]:shadow-sm"
+            >
               <Swords className="mr-2 h-4 w-4" />
               {t("game_room.title")}
             </TabsTrigger>
@@ -120,6 +166,7 @@ export default function AppPage() {
                   <MarketOverview />
                 </motion.div>
               </TabsContent>
+
               <TabsContent value="issue" className="m-0 outline-none">
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
@@ -130,6 +177,7 @@ export default function AppPage() {
                   <IssueToken />
                 </motion.div>
               </TabsContent>
+
               <TabsContent value="portfolio" className="m-0 outline-none">
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
@@ -140,6 +188,7 @@ export default function AppPage() {
                   <Portfolio />
                 </motion.div>
               </TabsContent>
+
               <TabsContent value="trading" className="m-0 outline-none">
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
@@ -150,6 +199,7 @@ export default function AppPage() {
                   <Trading />
                 </motion.div>
               </TabsContent>
+
               <TabsContent value="payments" className="m-0 outline-none">
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
@@ -160,6 +210,7 @@ export default function AppPage() {
                   <Payments />
                 </motion.div>
               </TabsContent>
+
               <TabsContent value="gameroom" className="m-0 outline-none">
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
@@ -177,10 +228,7 @@ export default function AppPage() {
 
       <ChatBot />
 
-      <AuthModal
-        open={showAuth}
-        onOpenChange={setShowAuth}
-      />
+      <AuthModal open={showAuth} onOpenChange={setShowAuth} />
     </div>
   );
 }
