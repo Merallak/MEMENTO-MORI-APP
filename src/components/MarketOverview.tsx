@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { DataService, Token } from "@/lib/dataService";
 import {
   Card,
@@ -10,16 +10,31 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, Users, Coins, TrendingUp } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription as DialogDesc,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { motion } from "framer-motion";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
+type TokenWithProfile = Token & {
+  profiles?: { full_name: string | null; email: string | null } | null;
+};
+
 export function MarketOverview() {
   const { t } = useLanguage();
-  const [tokens, setTokens] = useState<Token[]>([]);
+  const [tokens, setTokens] = useState<TokenWithProfile[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [stats, setStats] = useState({ users: 0, tokens: 0, marketCap: 0 });
   const [loading, setLoading] = useState(true);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [selectedToken, setSelectedToken] = useState<TokenWithProfile | null>(
+    null
+  );
 
   useEffect(() => {
     loadMarketData();
@@ -31,7 +46,10 @@ export function MarketOverview() {
       setTokens(allTokens);
 
       const uniqueUsers = new Set(allTokens.map((tok) => tok.issuer_id)).size;
-      const totalMarketCap = allTokens.reduce((sum, tok) => sum + tok.market_cap, 0);
+      const totalMarketCap = allTokens.reduce(
+        (sum, tok) => sum + tok.market_cap,
+        0
+      );
 
       setStats({
         users: uniqueUsers,
@@ -59,14 +77,14 @@ export function MarketOverview() {
         transition={{ duration: 0.5 }}
       >
         <Card className="border-border/50 bg-card shadow-lg">
-          <CardHeader>
+          <CardHeader className="!p-3">
             <CardTitle className="text-2xl font-bold">
               {t("market.title")}
             </CardTitle>
             <CardDescription>{t("landing.description")}</CardDescription>
           </CardHeader>
 
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-6 !p-3 !pt-0">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
@@ -143,7 +161,7 @@ export function MarketOverview() {
                 {t("market.no_tokens")}
               </motion.div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid gap-1 justify-center [grid-template-columns:repeat(auto-fit,minmax(260px,260px))]">
                 {filteredTokens.map((token, index) => (
                   <motion.div
                     key={token.id}
@@ -153,11 +171,11 @@ export function MarketOverview() {
                     whileHover={{ scale: 1.02, y: -5 }}
                     className="group"
                   >
-                    <Card className="overflow-hidden hover:shadow-lg transition-shadow border-border/50 bg-card">
-                      <CardHeader className="pb-2">
-                        <div className="flex justify-between items-start">
-                          <div className="flex items-center gap-3">
-                            <Avatar className="w-12 h-12 border-2 border-background shadow-sm">
+                    <Card className="overflow-hidden hover:shadow-lg transition-shadow border-border/50 bg-card aspect-square w-full flex flex-col justify-center">
+                      <CardHeader className="pb-2 text-center">
+                        <div className="flex flex-col items-center gap-3">
+                          <div className="flex flex-col items-center gap-2">
+                            <Avatar className="w-20 h-20 border-2 border-background shadow-sm">
                               <AvatarImage
                                 src={token.image_url || ""}
                                 className="object-cover"
@@ -167,10 +185,10 @@ export function MarketOverview() {
                               </AvatarFallback>
                             </Avatar>
                             <div>
-                              <CardTitle className="text-xl font-display">
+                              <CardTitle className="text-xl font-display text-center">
                                 {token.ticker}
                               </CardTitle>
-                              <div className="text-sm text-muted-foreground">
+                              <div className="text-sm text-muted-foreground text-center">
                                 {token.name}
                               </div>
                             </div>
@@ -178,36 +196,16 @@ export function MarketOverview() {
                         </div>
                       </CardHeader>
 
-                      <CardContent className="space-y-3">
-                        <div className="space-y-2 text-sm">
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">
-                              {t("issue.net_worth")}
-                            </span>
-                            <span className="font-semibold">
-                              ${token.net_worth.toLocaleString()}
-                            </span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">
-                              {t("market.price")}
-                            </span>
-                            <span className="font-semibold text-primary">
-                              ${token.current_price.toFixed(2)}
-                            </span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">
-                              {t("issue.total_supply")}
-                            </span>
-                            <span className="font-semibold">
-                              {token.total_supply.toLocaleString()}
-                            </span>
-                          </div>
-                        </div>
-
-                        <Button className="w-full" variant="default">
-                          {t("trading.tabs.buy")}
+                      <CardContent className="space-y-3 flex justify-center">
+                        <Button
+                          className="mx-auto w-fit h-auto px-3 py-1.5 text-xs"
+                          variant="default"
+                          onClick={() => {
+                            setSelectedToken(token);
+                            setDetailsOpen(true);
+                          }}
+                        >
+                          {t("market.view_details")}
                         </Button>
                       </CardContent>
                     </Card>
@@ -215,6 +213,69 @@ export function MarketOverview() {
                 ))}
               </div>
             )}
+
+            <Dialog
+              open={detailsOpen}
+              onOpenChange={(open) => {
+                setDetailsOpen(open);
+                if (!open) setSelectedToken(null);
+              }}
+            >
+              <DialogContent className="sm:max-w-xl">
+                {selectedToken ? (
+                  <>
+                    <DialogHeader>
+                      <div className="flex items-center gap-4">
+                        <Avatar className="w-20 h-20 border-2 border-background shadow-sm">
+                          <AvatarImage
+                            src={selectedToken.image_url || ""}
+                            className="object-cover"
+                          />
+                          <AvatarFallback className="text-2xl bg-primary/10 text-primary font-bold">
+                            {selectedToken.ticker.substring(0, 2)}
+                          </AvatarFallback>
+                        </Avatar>
+
+                        <div className="min-w-0">
+                          <DialogTitle className="truncate">
+                            {selectedToken.ticker} — {selectedToken.name}
+                          </DialogTitle>
+                          <DialogDesc>
+                            {t("market.issued_by")}:{" "}
+                            {selectedToken.profiles?.full_name ||
+                              selectedToken.profiles?.email ||
+                              t("common.not_available")}
+                          </DialogDesc>
+                        </div>
+                      </div>
+                    </DialogHeader>
+
+                    <div className="mt-4 space-y-3 text-sm">
+                      <div className="flex justify-between gap-4">
+                        <span className="text-muted-foreground">{t("issue.net_worth")}</span>
+                        <span className="font-semibold">
+                          ${selectedToken.net_worth.toLocaleString()}
+                        </span>
+                      </div>
+
+                      <div className="flex justify-between gap-4">
+                        <span className="text-muted-foreground">{t("market.price")}</span>
+                        <span className="font-semibold text-primary">
+                          ${selectedToken.current_price.toFixed(2)}
+                        </span>
+                      </div>
+
+                      <div className="flex justify-between gap-4">
+                        <span className="text-muted-foreground">{t("issue.total_supply")}</span>
+                        <span className="font-semibold">
+                          {selectedToken.total_supply.toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
+                  </>
+                ) : null}
+              </DialogContent>
+            </Dialog>
           </CardContent>
         </Card>
       </motion.div>

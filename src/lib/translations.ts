@@ -13,6 +13,7 @@ export const translations = {
       error: "Error",
       loading: "Loading...",
       required: "All fields are required",
+      not_available: "Not available",
     },
 
     brand: {
@@ -128,6 +129,7 @@ export const translations = {
       all_tokens: "All Tokens",
       ticker: "Ticker",
       issuer: "Issuer",
+      issued_by: "Issued by",
       price: "Price",
       change_24h: "24h Change",
       market_cap: "Market Cap",
@@ -135,7 +137,7 @@ export const translations = {
       total_supply: "Total Supply",
       view_details: "View Details",
       no_tokens: "No tokens available",
-      loading_market: "Loading market data...",
+      loading_market: "Loading market data...",      
     },
 
     issue: {
@@ -567,6 +569,7 @@ export const translations = {
       error: "Error",
       loading: "Cargando...",
       required: "Todos los campos son requeridos",
+      not_available: "No disponible",
     },
 
     brand: {
@@ -685,6 +688,7 @@ export const translations = {
       all_tokens: "Todas las Fichas",
       ticker: "Símbolo",
       issuer: "Emisor",
+      issued_by: "Emitida por",
       price: "Precio",
       change_24h: "Cambio 24h",
       market_cap: "Cap. de Mercado",
@@ -692,7 +696,7 @@ export const translations = {
       total_supply: "Suministro Total",
       view_details: "Ver Detalles",
       no_tokens: "No hay fichas disponibles",
-      loading_market: "Cargando datos del mercado...",
+      loading_market: "Cargando datos del mercado...",      
     },
 
     issue: {
