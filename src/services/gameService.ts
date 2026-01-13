@@ -2,6 +2,15 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 
 export type RPSGame = Tables<"rps_games">;
+export type TTTGame = Tables<"ttt_games">;
+export type TTTCell = number;
+
+export interface TTTGameWithHost extends TTTGame {
+  host?: {
+    full_name?: string | null;
+    email?: string | null;
+  } | null;
+}
 export type GameMove = "rock" | "paper" | "scissors";
 export type GameStatus = "waiting" | "active" | "playing" | "finished" | "cancelled";
 
@@ -405,6 +414,138 @@ export class GameService {
       return { success: false, error: first.error };
     }
 
+    return { success: true };
+  }
+  
+  // --------------------
+  // Tic Tac Toe (TTT)
+  // --------------------
+
+  static async createTTTGame(betAmount: number): Promise<{ success: boolean; gameId?: string; error?: string }> {
+    const { data, error } = await supabase.rpc("create_ttt_game", { p_bet_amount: betAmount });
+    if (error) return { success: false, error: error.message };
+
+    const gameId = typeof data === "string" ? data : (data as unknown as { game_id?: string })?.game_id;
+    return { success: true, gameId };
+  }
+
+  static async createPrivateTTTGame(betAmount: number): Promise<{ success: boolean; gameId?: string; gameCode?: string; error?: string }> {
+    const { data, error } = await supabase.rpc("create_private_ttt_game", { p_bet_amount: betAmount });
+    if (error) return { success: false, error: error.message };
+
+    const result = data as { success: boolean; game_id?: string; game_code?: string; error?: string } | null;
+    if (!result || !result.success) return { success: false, error: result?.error || "Unknown error creating private game" };
+
+    return { success: true, gameId: result.game_id, gameCode: result.game_code };
+  }
+
+  static async joinTTTGameByCode(gameCode: string): Promise<{ success: boolean; gameId?: string; error?: string }> {
+    const { data, error } = await supabase.rpc("join_ttt_game_by_code", { p_game_code: gameCode.toUpperCase() });
+    if (error) return { success: false, error: error.message };
+
+    const result = data as { success: boolean; game_id?: string; error?: string };
+    if (!result.success) return { success: false, error: result.error };
+
+    return { success: true, gameId: result.game_id };
+  }
+
+  static async joinTTTGame(gameId: string): Promise<{ success: boolean; error?: string }> {
+    const { error } = await supabase.rpc("join_ttt_game", { p_game_id: gameId });
+    if (error) return { success: false, error: error.message };
+    return { success: true };
+  }
+
+  static async submitTTTMove(gameId: string, cell: TTTCell): Promise<{ success: boolean; error?: string }> {
+    // backend valida 0..8, igual validamos aquí por seguridad
+    if (!Number.isInteger(cell) || cell < 0 || cell > 8) {
+      return { success: false, error: "Invalid cell" };
+    }
+
+    const { error } = await supabase.rpc("submit_ttt_move", { p_game_id: gameId, p_cell: cell });
+    if (error) return { success: false, error: error.message };
+    return { success: true };
+  }
+
+  static async getAvailableTTTGames(): Promise<TTTGameWithHost[]> {
+    const { data, error } = await supabase
+      .from("ttt_games")
+      .select(`*, host:profiles!ttt_games_host_id_fkey(full_name, email)`)
+      .eq("status", "waiting")
+      .order("created_at", { ascending: false });
+
+    if (error) return [];
+    return (data || []) as TTTGameWithHost[];
+  }
+
+  static async getUserActiveTTTGame(userId: string): Promise<TTTGame | null> {
+    const { data, error } = await supabase
+      .from("ttt_games")
+      .select(
+        `
+        *,
+        host:profiles!ttt_games_host_id_fkey(full_name, email),
+        guest:profiles!ttt_games_guest_id_fkey(full_name, email)
+      `
+      )
+      .or(`host_id.eq.${userId},guest_id.eq.${userId}`)
+      .in("status", ["waiting", "active", "playing"])
+      .maybeSingle();
+
+    if (error) {
+      const code = (error as { code?: string }).code;
+      if (code === "PGRST116") return null;
+      return null;
+    }
+
+    return (data as TTTGame) || null;
+  }
+
+  static async getTTTGame(gameId: string): Promise<{ data: TTTGame | null; error: any }> {
+    const { data, error } = await supabase.from("ttt_games").select("*").eq("id", gameId).single();
+    return { data, error };
+  }
+
+  static subscribeToTTTGame(gameId: string, callback: (game: TTTGame) => void) {
+    const channel = supabase
+      .channel(`ttt_game:${gameId}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "ttt_games", filter: `id=eq.${gameId}` },
+        (payload) => callback(payload.new as TTTGame)
+      )
+      .subscribe();
+    return channel;
+  }
+
+  static async restartTTTGame(gameId: string): Promise<{ success: boolean; error?: string }> {
+    const { error } = await supabase.rpc("restart_ttt_game", { p_game_id: gameId });
+    if (error) return { success: false, error: error.message };
+    return { success: true };
+  }
+
+  static async forfeitTTTGame(gameId: string): Promise<{ success: boolean; error?: string }> {
+    const { error } = await supabase.from("ttt_games").update({ status: "cancelled" }).eq("id", gameId);
+    if (error) return { success: false, error: error.message };
+    return { success: true };
+  }
+
+  static async proposeNewTTTBet(gameId: string, newBet: number): Promise<{ success: boolean; error?: string }> {
+    const { data, error } = await supabase.rpc("propose_new_ttt_bet" as any, { p_game_id: gameId, p_new_bet: newBet });
+    if (error) return { success: false, error: error.message };
+
+    const arr = (data ?? []) as { success: boolean; error?: string }[];
+    const first = arr[0] ?? { success: true };
+    if (!first.success) return { success: false, error: first.error };
+    return { success: true };
+  }
+
+  static async acceptNewTTTBet(gameId: string): Promise<{ success: boolean; error?: string }> {
+    const { data, error } = await supabase.rpc("accept_new_ttt_bet" as any, { p_game_id: gameId });
+    if (error) return { success: false, error: error.message };
+
+    const arr = (data ?? []) as { success: boolean; error?: string }[];
+    const first = arr[0] ?? { success: true };
+    if (!first.success) return { success: false, error: first.error };
     return { success: true };
   }
 }

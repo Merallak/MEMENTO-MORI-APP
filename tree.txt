@@ -21,6 +21,7 @@ public/sw.js
 src/components/AuthModal.tsx
 src/components/ChatBot.tsx
 src/components/GameRoom/ActiveGame.tsx
+src/components/GameRoom/ActiveTTTGame.tsx
 src/components/GameRoom/GameLobby.tsx
 src/components/GameRoom/GameRoom.tsx
 src/components/IssueToken.tsx
@@ -127,7 +128,8 @@ supabase/migrations/20260101082721_migration_090909e7.sql
 supabase/migrations/20260101091229_migration_d7675837.sql
 supabase/migrations/20260101093717_migration_f1bc3d3d.sql
 supabase/migrations/20260103000000_rebuild_rps.sql
+supabase/migrations/20260104120000_create_ttt_logic.sql
+supabase/migrations/20260113000000_add_ttt.sql
 tailwind.config.ts
-tree.txt
 tsconfig.json
 vercel.json

@@ -530,6 +530,17 @@ export const translations = {
         you: "You",
         opponent: "Opponent",
         vs: "VS",
+      },      
+      game_selector: {
+        label: "Game",
+        rps: "Rock Paper Scissors",
+        ttt: "Tic Tac Toe",
+      },
+      ttt: {
+        your_turn: "Your turn",
+        opponent_turn: "Opponent's turn",
+        you_are: "You are {{symbol}}",
+        cell_aria: "Cell {{index}}",
       },
       lobby_ui: {
         quick_match: "Quick Match",
@@ -1090,6 +1101,17 @@ export const translations = {
         you: "Tú",
         opponent: "Oponente",
         vs: "VS",
+      },      
+      game_selector: {
+        label: "Juego",
+        rps: "Piedra, papel o tijeras",
+        ttt: "Gato (Tic Tac Toe)",
+      },
+      ttt: {
+        your_turn: "Tu turno",
+        opponent_turn: "Turno del oponente",
+        you_are: "Eres {{symbol}}",
+        cell_aria: "Casilla {{index}}",
       },
       lobby_ui: {
         quick_match: "Partida rápida",

@@ -1,5 +1,5 @@
 {
-  "name": "MEMENTO MORI",
+  "name": "MEMENTO MORI APP",
   "short_name": "MMA",
   "description": "Memento Mori App - Social Economy Game",
   "start_url": "/",
@@ -20,5 +20,6 @@
       "type": "image/png",
       "purpose": "any maskable"
     }
-  ]
+  ],
+  "id": "MMA"
 }

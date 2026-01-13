@@ -253,6 +253,95 @@ export type Database = {
           },
         ]
       }
+      ttt_games: {
+        Row: {
+          bet_amount: number | null
+          board: string
+          created_at: string | null
+          expires_at: string | null
+          game_code: string | null
+          guest_id: string | null
+          guest_symbol: string | null
+          host_id: string
+          host_symbol: string | null
+          id: string
+          is_private: boolean | null
+          next_bet_amount: number | null
+          next_bet_proposer_id: string | null
+          round_number: number
+          status: string
+          turn_player_id: string | null
+          winner_id: string | null
+        }
+        Insert: {
+          bet_amount?: number | null
+          board?: string
+          created_at?: string | null
+          expires_at?: string | null
+          game_code?: string | null
+          guest_id?: string | null
+          guest_symbol?: string | null
+          host_id: string
+          host_symbol?: string | null
+          id?: string
+          is_private?: boolean | null
+          next_bet_amount?: number | null
+          next_bet_proposer_id?: string | null
+          round_number?: number
+          status?: string
+          turn_player_id?: string | null
+          winner_id?: string | null
+        }
+        Update: {
+          bet_amount?: number | null
+          board?: string
+          created_at?: string | null
+          expires_at?: string | null
+          game_code?: string | null
+          guest_id?: string | null
+          guest_symbol?: string | null
+          host_id?: string
+          host_symbol?: string | null
+          id?: string
+          is_private?: boolean | null
+          next_bet_amount?: number | null
+          next_bet_proposer_id?: string | null
+          round_number?: number
+          status?: string
+          turn_player_id?: string | null
+          winner_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ttt_games_guest_id_fkey"
+            columns: ["guest_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ttt_games_host_id_fkey"
+            columns: ["host_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ttt_games_turn_player_id_fkey"
+            columns: ["turn_player_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ttt_games_winner_id_fkey"
+            columns: ["winner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tokens: {
         Row: {
           created_at: string | null
@@ -390,6 +479,30 @@ export type Database = {
       }
       submit_rps_move: {
         Args: { p_game_id: string; p_move: string }
+        Returns: undefined
+      }      
+      accept_new_ttt_bet: {
+        Args: { p_game_id: string }
+        Returns: {
+          error: string
+          success: boolean
+        }[]
+      }
+      create_private_ttt_game: { Args: { p_bet_amount: number }; Returns: Json }
+      create_ttt_game: { Args: { p_bet_amount: number }; Returns: string }
+      join_ttt_game: { Args: { p_game_id: string }; Returns: undefined }
+      join_ttt_game_by_code: { Args: { p_game_code: string }; Returns: Json }
+      propose_new_ttt_bet: {
+        Args: { p_game_id: string; p_new_bet: number }
+        Returns: {
+          error: string
+          success: boolean
+        }[]
+      }
+      resolve_ttt_game: { Args: { p_game_id: string }; Returns: undefined }
+      restart_ttt_game: { Args: { p_game_id: string }; Returns: undefined }
+      submit_ttt_move: {
+        Args: { p_game_id: string; p_cell: number }
         Returns: undefined
       }
     }
