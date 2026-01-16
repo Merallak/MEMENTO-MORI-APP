@@ -130,6 +130,8 @@ supabase/migrations/20260101093717_migration_f1bc3d3d.sql
 supabase/migrations/20260103000000_rebuild_rps.sql
 supabase/migrations/20260104120000_create_ttt_logic.sql
 supabase/migrations/20260113000000_add_ttt.sql
+supabase/migrations/20260121120000_create_avatars_bucket.sql
 tailwind.config.ts
+tree.txt
 tsconfig.json
 vercel.json

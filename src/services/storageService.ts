@@ -1,11 +1,11 @@
 import { supabase } from "@/integrations/supabase/client";
 
 /**
- * Storage Service for Token Images
- * Handles uploading and managing token images in Supabase Storage
+ * Storage Service for Token Images & Avatars
  */
 
-const BUCKET_NAME = "MEMENTO MORI APP TOKEN IMAGES";
+const TOKEN_BUCKET_NAME = "MEMENTO MORI APP TOKEN IMAGES";
+const AVATAR_BUCKET_NAME = "avatars"; 
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
 const ALLOWED_FILE_TYPES = ["image/png", "image/jpeg", "image/jpg", "image/webp", "image/gif"];
 
@@ -51,13 +51,31 @@ function generateFileName(userId: string, originalName: string): string {
 
 /**
  * Uploads token image to Supabase Storage
- * @param file - Image file to upload
- * @param userId - Current user ID
- * @returns Object with success status and public URL
  */
 export async function uploadTokenImage(
   file: File,
   userId: string
+): Promise<UploadResult> {
+  return uploadFileToBucket(file, userId, TOKEN_BUCKET_NAME);
+}
+
+/**
+ * Uploads user avatar to Supabase Storage
+ */
+export async function uploadAvatarImage(
+  file: File,
+  userId: string
+): Promise<UploadResult> {
+  return uploadFileToBucket(file, userId, AVATAR_BUCKET_NAME);
+}
+
+/**
+ * Generic upload function
+ */
+async function uploadFileToBucket(
+  file: File,
+  userId: string,
+  bucketName: string
 ): Promise<UploadResult> {
   try {
     // Validate file
@@ -68,18 +86,19 @@ export async function uploadTokenImage(
 
     // Generate unique filename
     const fileName = generateFileName(userId, file.name);
+    // IMPORTANTE: La estructura de carpeta debe coincidir con la política RLS (auth.uid())
     const filePath = `${userId}/${fileName}`;
 
     // Upload to Supabase Storage
     const { data, error } = await supabase.storage
-      .from(BUCKET_NAME)
+      .from(bucketName)
       .upload(filePath, file, {
         cacheControl: "3600",
         upsert: false,
       });
 
     if (error) {
-      console.error("Storage upload error:", error);
+      console.error(`Storage upload error (${bucketName}):`, error);
       return {
         success: false,
         error: "Error al subir la imagen. Intenta de nuevo.",
@@ -89,7 +108,7 @@ export async function uploadTokenImage(
     // Get public URL
     const {
       data: { publicUrl },
-    } = supabase.storage.from(BUCKET_NAME).getPublicUrl(data.path);
+    } = supabase.storage.from(bucketName).getPublicUrl(data.path);
 
     return {
       success: true,
@@ -105,17 +124,15 @@ export async function uploadTokenImage(
 }
 
 /**
- * Deletes token image from Storage (optional cleanup)
+ * Deletes image from Storage
  */
-export async function deleteTokenImage(imageUrl: string): Promise<boolean> {
+export async function deleteImage(imageUrl: string, bucketName: string = TOKEN_BUCKET_NAME): Promise<boolean> {
   try {
-    // Extract path from URL
-    const urlParts = imageUrl.split(`/${BUCKET_NAME}/`);
+    const urlParts = imageUrl.split(`/${bucketName}/`);
     if (urlParts.length < 2) return false;
 
     const filePath = urlParts[1];
-
-    const { error } = await supabase.storage.from(BUCKET_NAME).remove([filePath]);
+    const { error } = await supabase.storage.from(bucketName).remove([filePath]);
 
     if (error) {
       console.error("Storage delete error:", error);
@@ -128,3 +145,6 @@ export async function deleteTokenImage(imageUrl: string): Promise<boolean> {
     return false;
   }
 }
+
+// Retrocompatibilidad
+export const deleteTokenImage = (url: string) => deleteImage(url, TOKEN_BUCKET_NAME);

@@ -396,6 +396,9 @@ export const translations = {
       usd_balance: "USD Balance",
       mmc_balance: "MMC Balance",
       has_exchanged_equity: "Equity exchanged",
+      upload_image: "Upload Image",
+      upload_success: "Image uploaded successfully",
+      upload_error: "Error uploading image",
     },
 
     mustBeLoggedIn: "You must be logged in to perform this action",
@@ -967,6 +970,9 @@ export const translations = {
       usd_balance: "Balance USD",
       mmc_balance: "Balance MMC",
       has_exchanged_equity: "Equity intercambiado",
+      upload_image: "Subir imagen",
+      upload_success: "Imagen subida correctamente",
+      upload_error: "Error al subir la imagen",
     },
 
     mustBeLoggedIn: "Debes iniciar sesión para realizar esta acción",

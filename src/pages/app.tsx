@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import Image from "next/image";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { ThemeSwitch } from "@/components/ThemeSwitch";
@@ -30,7 +31,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function AppPage() {
-  const { user, signOut, loading } = useAuth();
+  const { user, profile, signOut, loading } = useAuth();
   const router = useRouter();
   const { t } = useLanguage();
   const [showAuth, setShowAuth] = useState(false);
@@ -58,14 +59,25 @@ export default function AppPage() {
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden relative">
-                <Image
-                  src="/MEMENTO_MORI_APP_4.jpeg"
-                  alt={t("landing.title")}
-                  fill
-                  className="object-cover"
-                />
-              </div>
+              {/* Lógica: Si hay usuario, mostrar Avatar del perfil. Si no, mostrar Logo App */}
+              {user ? (
+                <Avatar className="h-8 w-8 cursor-pointer" onClick={() => setActiveTab("profile")}>
+                  <AvatarImage src={profile?.avatar_url || ""} className="object-cover" />
+                  <AvatarFallback className="bg-primary/20 text-xs">
+                    {user.email?.substring(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+              ) : (
+                <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden relative">
+                  <Image
+                    src="/MEMENTO_MORI_APP_4.jpeg"
+                    alt={t("landing.title")}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+              )}
+              
               <span className="font-bold text-lg hidden sm:block">
                 {t("landing.title")}
               </span>
