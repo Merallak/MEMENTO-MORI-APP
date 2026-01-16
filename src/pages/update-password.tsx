@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -13,29 +13,63 @@ import SEO from "@/components/SEO";
 export default function UpdatePasswordPage() {
   const [newPassword, setNewPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  // Estado para controlar la carga inicial de verificación de sesión
+  const [verifying, setVerifying] = useState(true);
   const [isValidSession, setIsValidSession] = useState(false);
   const router = useRouter();
   const { t } = useLanguage();
   const { toast } = useToast();
 
   useEffect(() => {
+    // Escuchar cambios de autenticación
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === "PASSWORD_RECOVERY" || session) {
+        setIsValidSession(true);
+        setVerifying(false);
+      }
+    });
+
+    // Verificación inicial manual
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        toast({
-          title: t('common.error'),
-          description: "Invalid or expired reset link",
-          variant: "destructive",
-        });
-        router.push("/");
-        return;
+      if (session) {
+        setIsValidSession(true);
+        setVerifying(false);
+      } else {
+        // Si no hay sesión inmediata, damos un breve margen por si el hash se está procesando
+        setTimeout(async () => {
+          const { data: { session: currentSession } } = await supabase.auth.getSession();
+          if (!currentSession) {
+            // Solo fallamos si no hay sesión y tampoco parece haber un token en la URL
+             if (!window.location.hash.includes("access_token") && !window.location.hash.includes("type=recovery")) {
+                setIsValidSession(false);
+             }
+          } else {
+             setIsValidSession(true);
+          }
+          setVerifying(false);
+        }, 1000);
       }
-
-      setIsValidSession(true);
     };
 
     checkSession();
-  }, [router, t, toast]);
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, []);
+
+  // Efecto separado para redirigir si falla la verificación
+  useEffect(() => {
+    if (!verifying && !isValidSession) {
+      toast({
+        title: t('common.error'),
+        description: "Invalid or expired reset link",
+        variant: "destructive",
+      });
+      router.push("/");
+    }
+  }, [verifying, isValidSession, router, t, toast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,15 +101,19 @@ export default function UpdatePasswordPage() {
     }
   };
 
-  if (!isValidSession) {
+  if (verifying) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
+          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-primary" />
           <p className="text-muted-foreground">{t('auth.redirecting')}</p>
         </div>
       </div>
     );
+  }
+
+  if (!isValidSession) {
+    return null; // El useEffect se encarga de redirigir
   }
 
   return (
@@ -109,6 +147,7 @@ export default function UpdatePasswordPage() {
                   required
                   minLength={6}
                   className="bg-background"
+                  placeholder="******"
                 />
               </div>
               <Button
@@ -116,6 +155,7 @@ export default function UpdatePasswordPage() {
                 className="w-full"
                 disabled={loading}
               >
+                {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
                 {loading ? "Updating..." : t('auth.updatePassword')}
               </Button>
             </form>
