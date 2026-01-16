@@ -14,6 +14,7 @@ export const translations = {
       loading: "Loading...",
       required: "All fields are required",
       not_available: "Not available",
+      or: "or",
     },
 
     brand: {
@@ -68,6 +69,7 @@ export const translations = {
       update: "Update Password",
       invalidSession: "Invalid or expired reset link",
       redirecting: "Redirecting...",
+      back_home: "Back to Home",
     },
 
     landing: {
@@ -533,6 +535,8 @@ export const translations = {
         you: "You",
         opponent: "Opponent",
         vs: "VS",
+        counter_placeholder: "Your amount",
+        counter_button: "Counter",
       },      
       game_selector: {
         label: "Game",
@@ -584,6 +588,7 @@ export const translations = {
       loading: "Cargando...",
       required: "Todos los campos son requeridos",
       not_available: "No disponible",
+      or: "o",
     },
 
     brand: {
@@ -1090,7 +1095,7 @@ export const translations = {
           "Esperando que el otro jugador acepte tu nueva apuesta de {{amount}} MMC",
         pending_for_you:
           "Tu oponente propone una nueva apuesta de {{amount}} MMC",
-        accept_button: "Aceptar nueva apuesta",
+        accept_button: "Aceptar nueva apuesta",        
       },
       active_game: {
         bet_amount_mmc: "Apuesta (MMC)",
@@ -1107,6 +1112,8 @@ export const translations = {
         you: "Tú",
         opponent: "Oponente",
         vs: "VS",
+        counter_placeholder: "Tu monto",
+        counter_button: "Contrapropuesta",
       },      
       game_selector: {
         label: "Juego",

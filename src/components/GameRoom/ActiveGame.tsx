@@ -58,12 +58,13 @@ export function ActiveGame({
 
     // Bet negotiation state (only used when bet_amount is not set yet)
     const [newBet, setNewBet] = useState<number | "">("");
+    const [counterBet, setCounterBet] = useState<number | "">("");
     const [isBetSubmitting, setIsBetSubmitting] = useState(false);
 
     // Leave confirmation (in-game, centered)
     const [leaveOpen, setLeaveOpen] = useState(false);
 
-    // Evitar closures “viejos” en callbacks
+    // Evitar closures "viejos" en callbacks
     const gameRef = useRef(game);
     useEffect(() => {
         gameRef.current = game;
@@ -197,12 +198,13 @@ export function ActiveGame({
         await handleForfeit();
     };
 
-    const handleProposeNewBet = async () => {
+    const handleProposeNewBet = async (betOverride?: number) => {
         if (!user) return;
-        if (newBet === "" || Number(newBet) <= 0) return;
+        if (betOverride === undefined && (newBet === "" || Number(newBet) <= 0)) return;
 
         setIsBetSubmitting(true);
-        const { success, error } = await GameService.proposeNewBet(game.id, Number(newBet));
+        const betValue = betOverride ?? Number(newBet);
+        const { success, error } = await GameService.proposeNewBet(game.id, betValue);
         setIsBetSubmitting(false);
 
         if (!success) {
@@ -553,7 +555,7 @@ export function ActiveGame({
                                                     <Button
                                                         variant="outline"
                                                         size="sm"
-                                                        onClick={handleProposeNewBet}
+                                                        onClick={() => handleProposeNewBet()}
                                                         disabled={isBetSubmitting || newBet === "" || Number(newBet) <= 0}
                                                     >
                                                         {isBetSubmitting ? t("common.loading") : t("game_room.active_game.propose_button")}
@@ -570,13 +572,39 @@ export function ActiveGame({
                                                             <p className="text-amber-200">
                                                                 {t("game_room.bet_change.pending_for_you", { amount: (game as any).next_bet_amount })}
                                                             </p>
-                                                            <Button
-                                                                size="sm"
-                                                                onClick={handleAcceptNewBet}
-                                                                disabled={isBetSubmitting}
-                                                            >
-                                                                {isBetSubmitting ? t("common.loading") : t("game_room.active_game.accept_button")}
-                                                            </Button>
+                                                            <div className="flex flex-wrap items-center gap-2">
+                                                                <Button
+                                                                    size="sm"
+                                                                    onClick={handleAcceptNewBet}
+                                                                    disabled={isBetSubmitting}
+                                                                >
+                                                                    {isBetSubmitting ? t("common.loading") : t("game_room.active_game.accept_button")}
+                                                                </Button>
+
+                                                                <span className="text-muted-foreground text-xs">{t("common.or")}</span>
+
+                                                                <input
+                                                                    type="number"
+                                                                    min={1}
+                                                                    placeholder={t("game_room.active_game.counter_placeholder")}
+                                                                    value={counterBet}
+                                                                    onChange={(e) => setCounterBet(e.target.value === "" ? "" : Number(e.target.value))}
+                                                                    className="w-24 rounded-md border px-2 py-1 text-sm bg-background text-foreground"
+                                                                />
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="outline"
+                                                                    onClick={() => {
+                                                                        if (counterBet !== "" && counterBet > 0) {
+                                                                            handleProposeNewBet(counterBet as number);
+                                                                            setCounterBet("");
+                                                                        }
+                                                                    }}
+                                                                    disabled={isBetSubmitting || counterBet === "" || Number(counterBet) <= 0}
+                                                                >
+                                                                    {t("game_room.active_game.counter_button")}
+                                                                </Button>
+                                                            </div>
                                                         </>
                                                     )}
                                                 </div>
@@ -765,33 +793,33 @@ export function ActiveGame({
 
                         {/* Leave game (centered, with confirmation) */}
                         <Dialog open={leaveOpen} onOpenChange={setLeaveOpen}>
-                        <div className="flex justify-center pt-2">
-                            <DialogTrigger asChild>
-                            <Button variant="ghost" disabled={loading}>
-                                <LogOut className="w-4 h-4 mr-2" />
-                                {t("game_room.actions.leave_game")}
-                            </Button>
-                            </DialogTrigger>
-                        </div>
+                            <div className="flex justify-center pt-2">
+                                <DialogTrigger asChild>
+                                    <Button variant="ghost" disabled={loading}>
+                                        <LogOut className="w-4 h-4 mr-2" />
+                                        {t("game_room.actions.leave_game")}
+                                    </Button>
+                                </DialogTrigger>
+                            </div>
 
-                        <DialogContent>
-                            <DialogHeader>
-                            <DialogTitle>{t("game_room.actions.leave_confirm_title")}</DialogTitle>
-                            <DialogDescription>
-                                {t("game_room.actions.leave_confirm_desc")}
-                            </DialogDescription>
-                            </DialogHeader>
+                            <DialogContent>
+                                <DialogHeader>
+                                    <DialogTitle>{t("game_room.actions.leave_confirm_title")}</DialogTitle>
+                                    <DialogDescription>
+                                        {t("game_room.actions.leave_confirm_desc")}
+                                    </DialogDescription>
+                                </DialogHeader>
 
-                            <DialogFooter>
-                            <Button variant="outline" onClick={() => setLeaveOpen(false)} disabled={loading}>
-                                {t("common.cancel")}
-                            </Button>
-                            <Button onClick={handleLeaveConfirmed} disabled={loading}>
-                                {loading ? t("common.loading") : t("common.confirm")}
-                            </Button>
-                            </DialogFooter>
-                        </DialogContent>
-                    </Dialog>
+                                <DialogFooter>
+                                    <Button variant="outline" onClick={() => setLeaveOpen(false)} disabled={loading}>
+                                        {t("common.cancel")}
+                                    </Button>
+                                    <Button onClick={handleLeaveConfirmed} disabled={loading}>
+                                        {loading ? t("common.loading") : t("common.confirm")}
+                                    </Button>
+                                </DialogFooter>
+                            </DialogContent>
+                        </Dialog>
                     </CardContent>
                 </Card>
             </motion.div>
