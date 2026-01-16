@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { GameService, type RPSGameWithHost, type TTTGameWithHost } from "@/services/gameService";
+import { GameService, type UnifiedGameWithHost } from "@/services/gameService";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
@@ -28,8 +28,8 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
   const { user } = useAuth();
   const { t } = useLanguage();
 
-  const [selectedGame, setSelectedGame] = useState<"rps" | "ttt">("rps");
-  const [games, setGames] = useState<Array<RPSGameWithHost | TTTGameWithHost>>([]);
+  const [selectedGame, setSelectedGame] = useState<"all" | "rps" | "ttt">("all");
+  const [games, setGames] = useState<UnifiedGameWithHost[]>([]);
   const [loading, setLoading] = useState(false);
   const [mmcBalance, setMmcBalance] = useState(0);
 
@@ -61,7 +61,11 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
     setHasExchanged(exchanged);
 
     const availableGames =
-      selectedGame === "rps" ? await GameService.getAvailableGames() : await GameService.getAvailableTTTGames();
+  selectedGame === "all"
+    ? await GameService.getAllAvailableGames()
+    : selectedGame === "rps"
+      ? (await GameService.getAvailableGames()).map((g) => ({ ...g, gameType: "rps" as const }))
+      : (await GameService.getAvailableTTTGames()).map((g) => ({ ...g, gameType: "ttt" as const }));
 
     setGames(availableGames);
     setLoading(false);
@@ -196,7 +200,7 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
     });
   };
 
-  const handleJoinGame = async (gameId: string, gameBet: number, isHost: boolean) => {
+  const handleJoinGame = async (gameId: string, gameBet: number, isHost: boolean, gameType: "rps" | "ttt") => {
     if (gameBet > mmcBalance) {
       toast({
         title: t("common.error"),
@@ -213,7 +217,7 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
 
     if (user) {
       const { data } =
-        selectedGame === "rps" ? await GameService.getGame(gameId) : await GameService.getTTTGame(gameId);
+        gameType === "rps" ? await GameService.getGame(gameId) : await GameService.getTTTGame(gameId);
       if (data && data.host_id === user.id) {
         onGameJoined();
         return;
@@ -223,7 +227,7 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
     setLoading(true);
 
     const { success, error } =
-      selectedGame === "rps" ? await GameService.joinGame(gameId) : await GameService.joinTTTGame(gameId);
+      gameType === "rps" ? await GameService.joinGame(gameId) : await GameService.joinTTTGame(gameId);
 
     if (success) {
       toast({
@@ -510,6 +514,7 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
                 <SelectValue placeholder={t("game_room.game_selector.label")} />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="all">{t("game_room.game_selector.all")}</SelectItem>
                 <SelectItem value="rps">{t("game_room.game_selector.rps")}</SelectItem>
                 <SelectItem value="ttt">{t("game_room.game_selector.ttt")}</SelectItem>
               </SelectContent>
@@ -542,7 +547,11 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
                 <Card key={game.id} className="hover:border-primary/50 transition-colors">
                   <CardHeader className="pb-2">
                     <div className="flex justify-between items-start">
-                      <Badge variant="outline">{t("game_room.game_info.host")}</Badge>
+                      <div className="flex gap-1">
+                        <Badge variant="secondary">
+                          {game.gameType === "rps" ? t("game_room.game_selector.rps") : t("game_room.game_selector.ttt")}
+                        </Badge>
+                      </div>
                       <Badge className="bg-primary text-primary-foreground">{betBadge}</Badge>
                     </div>
                     <CardTitle className="mt-2 truncate">{game.host?.full_name || t("game_room.anonymous")}</CardTitle>
@@ -565,7 +574,7 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
                   </CardContent>
 
                   <CardFooter className="pt-2">
-                    <Button onClick={() => handleJoinGame(game.id, bet, !!isHost)} disabled={disableJoin} className="w-full">
+                    <Button onClick={() => handleJoinGame(game.id, bet, !!isHost, game.gameType)} disabled={disableJoin} className="w-full">
                       {t("game_room.game_info.join")}
                     </Button>
                   </CardFooter>

@@ -11,6 +11,9 @@ export interface TTTGameWithHost extends TTTGame {
     email?: string | null;
   } | null;
 }
+export type UnifiedGameWithHost = 
+  | (RPSGameWithHost & { gameType: "rps" })
+  | (TTTGameWithHost & { gameType: "ttt" });
 export type GameMove = "rock" | "paper" | "scissors";
 export type GameStatus = "waiting" | "active" | "playing" | "finished" | "cancelled";
 
@@ -466,6 +469,22 @@ export class GameService {
     return { success: true };
   }
 
+    /**
+   * Get all available games (RPS + TTT) combined
+   */
+  static async getAllAvailableGames(): Promise<UnifiedGameWithHost[]> {
+    const [rpsGames, tttGames] = await Promise.all([
+      this.getAvailableGames(),
+      this.getAvailableTTTGames(),
+    ]);
+
+    const rpsWithType: UnifiedGameWithHost[] = rpsGames.map((g) => ({ ...g, gameType: "rps" as const }));
+    const tttWithType: UnifiedGameWithHost[] = tttGames.map((g) => ({ ...g, gameType: "ttt" as const }));
+
+    return [...rpsWithType, ...tttWithType].sort(
+      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+  }
   static async getAvailableTTTGames(): Promise<TTTGameWithHost[]> {
     const { data, error } = await supabase
       .from("ttt_games")

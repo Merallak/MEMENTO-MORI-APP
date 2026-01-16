@@ -539,7 +539,8 @@ export const translations = {
         counter_button: "Counter",
       },      
       game_selector: {
-        label: "Game",
+          label: "Game",
+        all: "All Games",
         rps: "Rock Paper Scissors",
         ttt: "Tic Tac Toe",
       },
@@ -1114,9 +1115,10 @@ export const translations = {
         vs: "VS",
         counter_placeholder: "Tu monto",
         counter_button: "Contrapropuesta",
-      },      
+      },
       game_selector: {
         label: "Juego",
+        all: "Todos los Juegos",
         rps: "Piedra, papel o tijeras",
         ttt: "Gato (Tic Tac Toe)",
       },
