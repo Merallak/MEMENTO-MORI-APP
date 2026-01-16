@@ -42,6 +42,7 @@ export function ActiveTTTGame({ game: initialGame, onGameEnd, onBackToLobby, onL
   const [mmcBalance, setMmcBalance] = useState<number | null>(null);
 
   const [newBet, setNewBet] = useState<number | "">("");
+  const [counterBet, setCounterBet] = useState<number | "">("");
   const [isBetSubmitting, setIsBetSubmitting] = useState(false);
 
   const [leaveOpen, setLeaveOpen] = useState(false);
@@ -106,7 +107,6 @@ export function ActiveTTTGame({ game: initialGame, onGameEnd, onBackToLobby, onL
   const betNotSet = game.bet_amount == null;
   const betDisplay = game.bet_amount == null ? "—" : game.bet_amount;
 
-  // Acceso directo a propiedades de TTTGame
   const hasPendingBetProposal = game.next_bet_amount != null && game.next_bet_proposer_id != null;
   const iProposedBet = hasPendingBetProposal && game.next_bet_proposer_id === user?.id;
 
@@ -170,12 +170,13 @@ export function ActiveTTTGame({ game: initialGame, onGameEnd, onBackToLobby, onL
     await handleForfeit();
   };
 
-  const handleProposeNewBet = async () => {
+  const handleProposeNewBet = async (betOverride?: number) => {
     if (!user) return;
-    if (newBet === "" || Number(newBet) <= 0) return;
+    if (betOverride === undefined && (newBet === "" || Number(newBet) <= 0)) return;
 
     setIsBetSubmitting(true);
-    const { success, error } = await GameService.proposeNewTTTBet(game.id, Number(newBet));
+    const betValue = betOverride ?? Number(newBet);
+    const { success, error } = await GameService.proposeNewTTTBet(game.id, betValue);
     setIsBetSubmitting(false);
 
     if (!success) {
@@ -314,7 +315,7 @@ export function ActiveTTTGame({ game: initialGame, onGameEnd, onBackToLobby, onL
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={handleProposeNewBet}
+                        onClick={() => handleProposeNewBet()}
                         disabled={isBetSubmitting || newBet === "" || Number(newBet) <= 0}
                       >
                         {isBetSubmitting ? t("common.loading") : t("game_room.active_game.propose_button")}
@@ -331,9 +332,39 @@ export function ActiveTTTGame({ game: initialGame, onGameEnd, onBackToLobby, onL
                           <p className="text-amber-200">
                             {t("game_room.bet_change.pending_for_you", { amount: game.next_bet_amount })}
                           </p>
-                          <Button size="sm" onClick={handleAcceptNewBet} disabled={isBetSubmitting}>
-                            {isBetSubmitting ? t("common.loading") : t("game_room.active_game.accept_button")}
-                          </Button>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Button
+                              size="sm"
+                              onClick={handleAcceptNewBet}
+                              disabled={isBetSubmitting}
+                            >
+                              {isBetSubmitting ? t("common.loading") : t("game_room.active_game.accept_button")}
+                            </Button>
+
+                            <span className="text-muted-foreground text-xs">{t("common.or")}</span>
+
+                            <input
+                              type="number"
+                              min={1}
+                              placeholder={t("game_room.active_game.counter_placeholder")}
+                              value={counterBet}
+                              onChange={(e) => setCounterBet(e.target.value === "" ? "" : Number(e.target.value))}
+                              className="w-24 rounded-md border px-2 py-1 text-sm bg-background text-foreground"
+                            />
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                if (counterBet !== "" && counterBet > 0) {
+                                  handleProposeNewBet(counterBet as number);
+                                  setCounterBet("");
+                                }
+                              }}
+                              disabled={isBetSubmitting || counterBet === "" || Number(counterBet) <= 0}
+                            >
+                              {t("game_room.active_game.counter_button")}
+                            </Button>
+                          </div>
                         </>
                       )}
                     </div>
