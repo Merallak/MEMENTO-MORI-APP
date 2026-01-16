@@ -479,6 +479,10 @@ export const translations = {
         leave_confirm_desc:
           "Are you sure you want to leave? Your current game may be forfeited.",
       },
+      turn_decider: {
+        deciding: "Deciding who goes first...",
+        goes_first: "Goes first:",
+      },
       errors: {
         create_failed: "Failed to create game",
         join_failed: "Failed to join game",
@@ -1056,6 +1060,10 @@ export const translations = {
         leave_confirm_title: "¿Salir de la partida?",
         leave_confirm_desc:
           "¿Seguro que quieres salir? Es posible que pierdas la partida en curso.",
+      },
+      turn_decider: {
+        deciding: "Decidiendo quién va primero...",
+        goes_first: "Va primero:",
       },
       errors: {
         create_failed: "Error al crear partida",

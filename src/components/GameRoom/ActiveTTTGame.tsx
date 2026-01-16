@@ -17,6 +17,7 @@ import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { GameService, type TTTGame } from "@/services/gameService";
 import { Loader2, LogOut, RotateCcw, Trophy } from "lucide-react";
+import { TurnDecider } from "./TurnDecider";
 
 interface ActiveTTTGameProps {
   game: TTTGame & {
@@ -46,6 +47,9 @@ export function ActiveTTTGame({ game: initialGame, onGameEnd, onBackToLobby, onL
   const [isBetSubmitting, setIsBetSubmitting] = useState(false);
 
   const [leaveOpen, setLeaveOpen] = useState(false);
+  const [showTurnDecider, setShowTurnDecider] = useState(false);
+  const [turnDeciderWinner, setTurnDeciderWinner] = useState<string>("");
+  const prevRoundRef = useRef<number>(initialGame.round_number);
 
   const gameRef = useRef(game);
   useEffect(() => {
@@ -100,6 +104,27 @@ export function ActiveTTTGame({ game: initialGame, onGameEnd, onBackToLobby, onL
 
   const isHost = user?.id === game.host_id;
   const isGuest = user?.id === game.guest_id;
+
+  // Detectar nueva ronda y mostrar animación de turno
+  useEffect(() => {
+    if (
+      game.round_number > prevRoundRef.current &&
+      game.status === "active" &&
+      game.turn_player_id
+    ) {
+      const hostName = initialGame.host?.full_name || t("game_room.anonymous");
+      const guestName = initialGame.guest?.full_name || t("game_room.anonymous");
+
+      const winnerName =
+        game.turn_player_id === game.host_id
+          ? (isHost ? t("game_room.results.you") : hostName)
+          : (isGuest ? t("game_room.results.you") : guestName);
+
+      setTurnDeciderWinner(winnerName);
+      setShowTurnDecider(true);
+      prevRoundRef.current = game.round_number;
+    }
+  }, [game.round_number, game.status, game.turn_player_id, game.host_id, initialGame.host?.full_name, initialGame.guest?.full_name, isHost, isGuest, t]);
 
   const mySymbol = isHost ? game.host_symbol : isGuest ? game.guest_symbol : null;
   const isMyTurn = !!user?.id && game.turn_player_id === user.id;
@@ -263,6 +288,13 @@ export function ActiveTTTGame({ game: initialGame, onGameEnd, onBackToLobby, onL
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
+      {showTurnDecider && (
+        <TurnDecider
+          winnerName={turnDeciderWinner}
+          onComplete={() => setShowTurnDecider(false)}
+        />
+      )}
+
       <Card className="border-2">
         <CardHeader className="text-center">
           <Badge variant={game.status === "active" ? "default" : "secondary"} className="mx-auto">

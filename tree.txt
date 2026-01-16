@@ -24,6 +24,7 @@ src/components/GameRoom/ActiveGame.tsx
 src/components/GameRoom/ActiveTTTGame.tsx
 src/components/GameRoom/GameLobby.tsx
 src/components/GameRoom/GameRoom.tsx
+src/components/GameRoom/TurnDecider.tsx
 src/components/IssueToken.tsx
 src/components/LanguageSwitch.tsx
 src/components/MarketOverview.tsx
