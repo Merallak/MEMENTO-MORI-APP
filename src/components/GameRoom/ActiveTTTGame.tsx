@@ -330,7 +330,11 @@ useEffect(() => {
           </CardTitle>
 
           <CardDescription>
-            {mySymbol ? t("game_room.ttt.you_are", { symbol: mySymbol }) : t("game_room.waiting_opponent")}
+            {mySymbol 
+              ? ((isHost && tokenImages.host) || (isGuest && tokenImages.guest) 
+                  ? null 
+                  : t("game_room.ttt.you_are", { symbol: mySymbol }))
+              : t("game_room.waiting_opponent")}
           </CardDescription>
 
           <div className="text-sm text-muted-foreground">
