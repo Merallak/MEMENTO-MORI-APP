@@ -457,11 +457,13 @@ useEffect(() => {
                     >
                       {cell === "_" ? "" : (
                         getSymbolImage(cell as "X" | "O") ? (
-                          <img 
-                            src={getSymbolImage(cell as "X" | "O")!} 
-                            alt={cell}
-                            className="w-3/4 h-3/4 object-contain rounded-full"
-                          />
+                          <div className="w-3/4 h-3/4 rounded-full overflow-hidden">
+                            <img 
+                              src={getSymbolImage(cell as "X" | "O")!} 
+                              alt={cell}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
                         ) : cell
                       )}
                     </button>
