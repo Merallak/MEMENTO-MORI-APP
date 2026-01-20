@@ -460,7 +460,7 @@ useEffect(() => {
                           <img 
                             src={getSymbolImage(cell as "X" | "O")!} 
                             alt={cell}
-                            className="w-10 h-10 object-cover rounded-full"
+                            className="w-3/4 h-3/4 object-contain"
                           />
                         ) : cell
                       )}
