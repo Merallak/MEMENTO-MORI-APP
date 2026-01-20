@@ -15,6 +15,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { DataService } from "@/lib/dataService";
 import { GameService, type TTTGame } from "@/services/gameService";
 import { Loader2, LogOut, RotateCcw, Trophy } from "lucide-react";
 import { TurnDecider } from "./TurnDecider";
@@ -41,6 +42,7 @@ export function ActiveTTTGame({ game: initialGame, onGameEnd, onBackToLobby, onL
   const [game, setGame] = useState<TTTGame>(initialGame);
   const [loading, setLoading] = useState(false);
   const [mmcBalance, setMmcBalance] = useState<number | null>(null);
+  const [tokenImages, setTokenImages] = useState<{ host: string | null; guest: string | null }>({ host: null, guest: null });
 
   const [newBet, setNewBet] = useState<number | "">("");
   const [counterBet, setCounterBet] = useState<number | "">("");
@@ -86,6 +88,26 @@ export function ActiveTTTGame({ game: initialGame, onGameEnd, onBackToLobby, onL
       cancelled = true;
     };
   }, [user?.id]);
+  // Fetch token images for host and guest
+useEffect(() => {
+  let cancelled = false;
+
+  (async () => {
+    const [hostToken, guestToken] = await Promise.all([
+      game.host_id ? DataService.getUserIssuedToken(game.host_id) : null,
+      game.guest_id ? DataService.getUserIssuedToken(game.guest_id) : null,
+    ]);
+
+    if (!cancelled) {
+      setTokenImages({
+        host: hostToken?.image_url || null,
+        guest: guestToken?.image_url || null,
+      });
+    }
+  })();
+
+  return () => { cancelled = true; };
+}, [game.host_id, game.guest_id]);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -128,6 +150,8 @@ export function ActiveTTTGame({ game: initialGame, onGameEnd, onBackToLobby, onL
 
   const mySymbol = isHost ? game.host_symbol : isGuest ? game.guest_symbol : null;
   const isMyTurn = !!user?.id && game.turn_player_id === user.id;
+  const getSymbolImage = (symbol: "X" | "O") => 
+  symbol === game.host_symbol ? tokenImages.host : tokenImages.guest;
 
   const betNotSet = game.bet_amount == null;
   const betDisplay = game.bet_amount == null ? "—" : game.bet_amount;
@@ -431,7 +455,15 @@ export function ActiveTTTGame({ game: initialGame, onGameEnd, onBackToLobby, onL
                         disabled ? "opacity-70" : "hover:bg-stone-100 dark:hover:bg-stone-900"
                       )}
                     >
-                      {cell === "_" ? "" : cell}
+                      {cell === "_" ? "" : (
+                        getSymbolImage(cell as "X" | "O") ? (
+                          <img 
+                            src={getSymbolImage(cell as "X" | "O")!} 
+                            alt={cell}
+                            className="w-10 h-10 object-cover rounded-full"
+                          />
+                        ) : cell
+                      )}
                     </button>
                   );
                 })}
