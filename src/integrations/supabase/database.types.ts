@@ -57,6 +57,38 @@ export type Database = {
           },
         ]
       }
+            amm_pools: {
+        Row: {
+          id: string
+          token_id: string
+          mmc_reserve: number
+          token_reserve: number
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          token_id: string
+          mmc_reserve?: number
+          token_reserve?: number
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          token_id?: string
+          mmc_reserve?: number
+          token_reserve?: number
+          created_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "amm_pools_token_id_fkey"
+            columns: ["token_id"]
+            isOneToOne: true
+            referencedRelation: "tokens"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       orders: {
         Row: {
           amount: number
@@ -457,6 +489,14 @@ export type Database = {
     Functions: {
       convert_usd_to_mmc: {
         Args: { p_usd_amount: number; p_user_id: string }
+        Returns: Json
+      }
+      buy_from_amm: {
+        Args: { p_token_id: string; p_mmc_amount: number }
+        Returns: Json
+      }
+      sell_to_amm: {
+        Args: { p_token_id: string; p_token_amount: number }
         Returns: Json
       }
       create_private_rps_game: { Args: { p_bet_amount: number }; Returns: Json }

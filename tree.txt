@@ -18,6 +18,7 @@ public/favicon.ico
 public/grid.svg
 public/manifest.json
 public/sw.js
+src/components/AMM.tsx
 src/components/AuthModal.tsx
 src/components/ChatBot.tsx
 src/components/GameRoom/ActiveGame.tsx

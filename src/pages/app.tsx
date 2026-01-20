@@ -12,6 +12,7 @@ import { MarketOverview } from "@/components/MarketOverview";
 import { IssueToken } from "@/components/IssueToken";
 import { Portfolio } from "@/components/Portfolio";
 import { Trading } from "@/components/Trading";
+import { AMM } from "@/components/AMM";
 import { Payments } from "@/components/Payments";
 import { ChatBot } from "@/components/ChatBot";
 import { GameRoom } from "@/components/GameRoom/GameRoom";
@@ -27,6 +28,7 @@ import {
   LogOut,
   Swords,
   User,
+  Coins,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -148,7 +150,15 @@ export default function AppPage() {
               <TrendingUp className="mr-2 h-4 w-4" />
               {t("nav.trading")}
             </TabsTrigger>
-
+            
+            <TabsTrigger
+              value="amm"
+              className="shrink-0 whitespace-nowrap data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-800"
+            >
+              <Coins className="mr-2 h-4 w-4" />
+              {t("nav.amm")}
+            </TabsTrigger>
+            
             <TabsTrigger
               value="payments"
               className="shrink-0 whitespace-nowrap data-[state=active]:bg-white dark:data-[state=active]:bg-amber-900/30 data-[state=active]:shadow-sm"
@@ -220,6 +230,17 @@ export default function AppPage() {
                 </motion.div>
               </TabsContent>
 
+              <TabsContent value="amm" className="m-0 outline-none">
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <AMM />
+                </motion.div>
+              </TabsContent>
+              
               <TabsContent value="payments" className="m-0 outline-none">
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
