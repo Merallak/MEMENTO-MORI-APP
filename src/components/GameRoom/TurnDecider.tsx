@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -18,56 +18,61 @@ export function TurnDecider({ winnerName, onComplete, duration = 2500 }: TurnDec
     return types[Math.floor(Math.random() * types.length)];
   });
 
+  const onCompleteRef = useRef(onComplete);
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
+
   useEffect(() => {
     const revealTimer = setTimeout(() => setPhase("revealing"), duration);
     const doneTimer = setTimeout(() => {
       setPhase("done");
-      onComplete();
+      onCompleteRef.current();
     }, duration + 1500);
 
     return () => {
       clearTimeout(revealTimer);
       clearTimeout(doneTimer);
     };
-  }, [duration, onComplete]);
+  }, [duration]);
+
+  if (phase === "done") return null;
 
   return (
     <AnimatePresence>
-      {phase !== "done" && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
-        >
-          <div className="flex flex-col items-center gap-6 p-8">
-            {phase === "animating" && (
-              <>
-                <div className="text-lg text-white/80 font-medium">
-                  {t("game_room.turn_decider.deciding")}
-                </div>
-                {animationType === "coin" && <CoinAnimation />}
-                {animationType === "dice" && <DiceAnimation />}
-                {animationType === "roulette" && <RouletteAnimation />}
-              </>
-            )}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+      >
+        <div className="flex flex-col items-center gap-6 p-8">
+          {phase === "animating" && (
+            <>
+              <div className="text-lg text-white/80 font-medium">
+                {t("game_room.turn_decider.deciding")}
+              </div>
+              {animationType === "coin" && <CoinAnimation />}
+              {animationType === "dice" && <DiceAnimation />}
+              {animationType === "roulette" && <RouletteAnimation />}
+            </>
+          )}
 
-            {phase === "revealing" && (
-              <motion.div
-                initial={{ scale: 0.5, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ type: "spring", damping: 15 }}
-                className="text-center"
-              >
-                <div className="text-xl text-white/80 mb-2">
-                  {t("game_room.turn_decider.goes_first")}
-                </div>
-                <div className="text-4xl font-bold text-white">{winnerName}</div>
-              </motion.div>
-            )}
-          </div>
-        </motion.div>
-      )}
+          {phase === "revealing" && (
+            <motion.div
+              initial={{ scale: 0.5, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", damping: 15 }}
+              className="text-center"
+            >
+              <div className="text-xl text-white/80 mb-2">
+                {t("game_room.turn_decider.goes_first")}
+              </div>
+              <div className="text-4xl font-bold text-white">{winnerName}</div>
+            </motion.div>
+          )}
+        </div>
+      </motion.div>
     </AnimatePresence>
   );
 }
