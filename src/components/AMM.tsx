@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { AlertCircle, ArrowRightLeft, Coins } from "lucide-react";
+import { AlertCircle, ArrowRightLeft, Coins, TrendingDown, TrendingUp } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -22,6 +22,141 @@ interface UserProfile {
   has_exchanged_equity: boolean;
 }
 
+// --- AMM Price Chart Component ---
+function AmmPriceChart({
+  currentPrice,
+  ticker,
+  tokenId,
+}: {
+  currentPrice: number;
+  ticker: string;
+  tokenId: string;
+}) {
+  const { t } = useLanguage();
+  const [chartData, setChartData] = useState<Array<{ timestamp: string; price: number }>>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadPriceHistory = async () => {
+      setLoading(true);
+      // Fetch history explicitly for AMM (MMC price)
+      const { data } = await supabase
+        .from("amm_price_history" as any)
+        .select("price_mmc, timestamp")
+        .eq("token_id", tokenId)
+        .order("timestamp", { ascending: true }) // Oldest first for chart
+        .limit(50); // Limit data points
+
+      if (data && data.length > 0) {
+        setChartData((data as any[]).map((h) => ({ timestamp: h.timestamp, price: Number(h.price_mmc) })));
+      } else {
+        // Fallback: Use current price as single point
+        setChartData([{ timestamp: new Date().toISOString(), price: currentPrice }]);
+      }
+      setLoading(false);
+    };
+
+    loadPriceHistory();
+  }, [tokenId, currentPrice]);
+
+  if (loading) {
+    return (
+      <div className="relative w-full h-[200px] bg-muted/20 rounded-lg p-4 border border-border/50 flex items-center justify-center mt-4">
+        <div className="text-sm text-muted-foreground">{t("common.loading")}</div>
+      </div>
+    );
+  }
+
+  const prices = chartData.map((d) => d.price);
+  // Add current price to the end if different, to make chart feel "live"
+  if (prices[prices.length - 1] !== currentPrice) {
+      prices.push(currentPrice);
+  }
+
+  const maxPrice = Math.max(...prices);
+  const minPrice = Math.min(...prices);
+  const priceRange = maxPrice - minPrice || 0.0001;
+
+  const svgHeight = 180;
+  const svgWidth = 500;
+
+  // Generate SVG path
+  const pathData = prices
+    .map((price, i) => {
+      const x = (i / Math.max(prices.length - 1, 1)) * svgWidth;
+      const y = svgHeight - ((price - minPrice) / priceRange) * svgHeight;
+      return `${i === 0 ? "M" : "L"} ${x},${y}`;
+    })
+    .join(" ");
+
+  const isPositive = prices.length > 1 ? prices[prices.length - 1] >= prices[0] : true;
+  const percentChange =
+    prices.length > 1
+      ? ((prices[prices.length - 1] - prices[0]) / prices[0]) * 100
+      : 0;
+
+  return (
+    <div className="relative w-full h-[200px] bg-muted/20 rounded-lg p-4 border border-border/50 mt-4">
+      <div className="flex justify-between items-start mb-2">
+        <div>
+          <div className="text-sm text-muted-foreground">
+            {ticker}/MMC
+          </div>
+          <div className="text-xl font-bold font-mono">
+            {currentPrice.toFixed(4)} MMC
+          </div>
+        </div>
+        <div
+          className={`flex items-center gap-1 px-2 py-1 rounded-md ${
+            isPositive ? "bg-emerald-500/10 text-emerald-500" : "bg-red-500/10 text-red-500"
+          }`}
+        >
+          {isPositive ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
+          <span className="text-sm font-mono font-bold">
+            {percentChange > 0 ? "+" : ""}
+            {percentChange.toFixed(2)}%
+          </span>
+        </div>
+      </div>
+
+      <svg
+        viewBox={`0 0 ${svgWidth} ${svgHeight}`}
+        className="w-full h-[120px]"
+        preserveAspectRatio="none"
+      >
+        {/* Gradient */}
+        <defs>
+          <linearGradient id={`ammGradient-${tokenId}`} x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor={isPositive ? "#10b981" : "#ef4444"} stopOpacity="0.3" />
+            <stop offset="100%" stopColor={isPositive ? "#10b981" : "#ef4444"} stopOpacity="0" />
+          </linearGradient>
+        </defs>
+
+        {/* Area */}
+        <motion.path
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          d={`${pathData} L ${svgWidth},${svgHeight} L 0,${svgHeight} Z`}
+          fill={`url(#ammGradient-${tokenId})`}
+        />
+
+        {/* Line */}
+        <motion.path
+          initial={{ pathLength: 0 }}
+          animate={{ pathLength: 1 }}
+          transition={{ duration: 1.5, ease: "easeOut" }}
+          d={pathData}
+          fill="none"
+          stroke={isPositive ? "#10b981" : "#ef4444"}
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+      </svg>
+    </div>
+  );
+}
+
+// --- Main AMM Component ---
 export function AMM() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -336,6 +471,13 @@ export function AMM() {
                     </div>
                   </div>
                 </div>
+
+                {/* --- AMM PRICE CHART ADDED HERE --- */}
+                <AmmPriceChart 
+                  currentPrice={currentPrice()} 
+                  ticker={selectedPool.token?.ticker || ""} 
+                  tokenId={selectedPool.token_id} 
+                />
 
                 {/* User holding */}
                 <div className="mt-4 p-3 rounded-lg bg-primary/5 border border-primary/20">
