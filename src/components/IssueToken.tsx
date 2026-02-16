@@ -277,8 +277,7 @@ export function IssueToken() {
               <Input
                 id="token-image"
                 type="file"
-                accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
-                onChange={handleImageFileChange}
+                accept="image/jpeg,image/jpg,image/png,image/webp,image/gif,image/x-icon,image/vnd.microsoft.icon,.ico,.svg"                onChange={handleImageFileChange}
                 className="cursor-pointer"
               />
               <p className="text-xs text-muted-foreground">

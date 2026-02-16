@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 const TOKEN_BUCKET_NAME = "MEMENTO MORI APP TOKEN IMAGES";
 const AVATAR_BUCKET_NAME = "avatars"; 
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
-const ALLOWED_FILE_TYPES = ["image/png", "image/jpeg", "image/jpg", "image/webp", "image/gif"];
+const ALLOWED_FILE_TYPES = ["image/png", "image/jpeg", "image/jpg", "image/webp", "image/gif", "image/x-icon", "image/vnd.microsoft.icon", "image/svg+xml"];
 
 interface UploadResult {
   success: boolean;
