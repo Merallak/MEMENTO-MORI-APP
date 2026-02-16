@@ -4,6 +4,7 @@ import { ThemeProvider } from "@/contexts/ThemeProvider";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { Toaster } from "@/components/ui/toaster";
 import { LanguageProvider } from "@/contexts/LanguageContext";
+import { NotificationProvider } from "@/contexts/NotificationContext";
 import { useEffect } from "react";
 
 export default function App({ Component, pageProps }: AppProps) {
@@ -25,8 +26,10 @@ export default function App({ Component, pageProps }: AppProps) {
     <LanguageProvider>
       <ThemeProvider>
         <AuthProvider>
-          <Component {...pageProps} />
-          <Toaster />
+          <NotificationProvider>
+            <Component {...pageProps} />
+            <Toaster />
+          </NotificationProvider>
         </AuthProvider>
       </ThemeProvider>
     </LanguageProvider>

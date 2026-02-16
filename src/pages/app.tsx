@@ -15,6 +15,7 @@ import { Trading } from "@/components/Trading";
 import { AMM } from "@/components/AMM";
 import { Payments } from "@/components/Payments";
 import { ChatBot } from "@/components/ChatBot";
+import { NotificationBell } from "@/components/NotificationBell";
 import { GameRoom } from "@/components/GameRoom/GameRoom";
 import { Profile } from "@/components/Profile";
 import AuthModal from "@/components/AuthModal";
@@ -89,6 +90,7 @@ export default function AppPage() {
           <div className="flex items-center gap-3">
             <LanguageSwitch />
             <ThemeSwitch />
+            {user && <NotificationBell />}
             {user ? (
               <div className="flex items-center gap-3">
                 <div className="hidden md:flex flex-col items-end mr-2">

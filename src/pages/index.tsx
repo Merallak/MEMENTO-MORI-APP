@@ -15,7 +15,7 @@ import { ChatBot } from "@/components/ChatBot";
 
 export default function LandingPage() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { t, language } = useLanguage();
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [stats, setStats] = useState({
@@ -36,6 +36,12 @@ export default function LandingPage() {
     });
   };
 
+  useEffect(() => {
+    if (!authLoading && user) {
+      router.push("/app");
+    }
+  }, [user, authLoading, router]);
+  
   useEffect(() => {
     DataService.initializeDemoData();
     loadStats();

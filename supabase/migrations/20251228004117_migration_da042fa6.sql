@@ -1,2 +1,0 @@
-ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_token_id uuid REFERENCES tokens(id);
-COMMENT ON COLUMN orders.payment_token_id IS 'NULL = USD price; UUID = Token Swap (price in target token units)';

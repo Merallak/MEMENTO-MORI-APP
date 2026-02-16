@@ -22,6 +22,7 @@ import { Html5Qrcode } from "html5-qrcode";
 import { DataService, Token } from "@/lib/dataService";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { createNotification } from "@/services/notificationService";
 import {
   QrCode as QrCodeIcon,
   Camera,
@@ -236,6 +237,30 @@ export function Payments() {
         message: t("payments.success"),
       });
 
+            // Notify sender
+      await createNotification({
+        user_id: user.id,
+        type: "payment_sent",
+        title: t("notifications.payment_sent"),
+        body: t("notifications.payment_sent_body", {
+          amount: String(scannedData.amount),
+          token: scannedData.token,
+        }),
+        metadata: { token: scannedData.token, amount: scannedData.amount },
+      });
+
+      // Notify recipient
+      await createNotification({
+        user_id: scannedData.recipient,
+        type: "payment_received",
+        title: t("notifications.payment_received"),
+        body: t("notifications.payment_received_body", {
+          amount: String(scannedData.amount),
+          token: scannedData.token,
+        }),
+        metadata: { token: scannedData.token, amount: scannedData.amount },
+      });
+      
       // Reset scanner data after successful payment
       setTimeout(() => {
         setScannedData(null);

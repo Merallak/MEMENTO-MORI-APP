@@ -595,6 +595,16 @@ export const translations = {
       },
     }, // IMPORTANT: this comma must exist before `mmc`
 
+        notifications: {
+      title: "Notifications",
+      mark_all_read: "Mark all read",
+      empty: "No notifications yet",
+      payment_sent: "Payment Sent",
+      payment_sent_body: "You sent {{amount}} {{token}} successfully",
+      payment_received: "Payment Received",
+      payment_received_body: "You received {{amount}} {{token}}",
+    },
+
     mmc: {
       name: "Memento Mori Coins",
       short: "MMC",
@@ -1206,6 +1216,16 @@ export const translations = {
         copied_desc: "Código copiado al portapapeles",
       },
     }, // IMPORTANT: this comma must exist before `mmc`
+
+        notifications: {
+      title: "Notificaciones",
+      mark_all_read: "Marcar todas leídas",
+      empty: "No hay notificaciones aún",
+      payment_sent: "Pago Enviado",
+      payment_sent_body: "Enviaste {{amount}} {{token}} exitosamente",
+      payment_received: "Pago Recibido",
+      payment_received_body: "Recibiste {{amount}} {{token}}",
+    },
 
     mmc: {
       name: "Monedas Memento Mori",
