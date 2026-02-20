@@ -122,5 +122,6 @@ supabase/functions/chat-assistant/config.toml
 supabase/functions/chat-assistant/index.ts
 supabase/migrations/20260125000000_create_notifications.sql
 tailwind.config.ts
+tree.txt
 tsconfig.json
 vercel.json

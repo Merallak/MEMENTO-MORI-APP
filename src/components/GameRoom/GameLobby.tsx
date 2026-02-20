@@ -28,7 +28,7 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
   const { user } = useAuth();
   const { t } = useLanguage();
 
-  const [selectedGame, setSelectedGame] = useState<"all" | "rps" | "ttt">("all");
+  const [selectedGame, setSelectedGame] = useState<"all" | "rps" | "ttt" | "coinflip">("all");
   const [games, setGames] = useState<UnifiedGameWithHost[]>([]);
   const [loading, setLoading] = useState(false);
   const [mmcBalance, setMmcBalance] = useState(0);
@@ -64,9 +64,20 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
   selectedGame === "all"
     ? await GameService.getAllAvailableGames()
     : selectedGame === "rps"
-      ? (await GameService.getAvailableGames()).map((g) => ({ ...g, gameType: "rps" as const }))
-      : (await GameService.getAvailableTTTGames()).map((g) => ({ ...g, gameType: "ttt" as const }));
-
+    ? (await GameService.getAvailableGames()).map((g) => ({
+        ...g,
+        gameType: "rps" as const,
+      }))
+    : selectedGame === "ttt"
+    ? (await GameService.getAvailableTTTGames()).map((g) => ({
+        ...g,
+        gameType: "ttt" as const,
+      }))
+    : (await GameService.getAvailableCoinflipGames()).map((g) => ({
+        ...g,
+        gameType: "coinflip" as const,
+      }));
+      
     setGames(availableGames);
     setLoading(false);
   };
@@ -86,7 +97,9 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
     const existing =
       selectedGame === "rps"
         ? await GameService.getUserActiveGame(user.id)
-        : await GameService.getUserActiveTTTGame(user.id);
+        : selectedGame === "ttt"
+        ? await GameService.getUserActiveTTTGame(user.id)
+        : await GameService.getUserActiveCoinflipGame(user.id);
 
     if (existing) {
       setIsCreateOpen(false);
@@ -96,7 +109,11 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
     }
 
     const { success, error } =
-      selectedGame === "rps" ? await GameService.createGame(0) : await GameService.createTTTGame(0);
+      selectedGame === "rps"
+        ? await GameService.createGame(0)
+        : selectedGame === "ttt"
+        ? await GameService.createTTTGame(0)
+        : await GameService.createCoinflipGame(0);
 
     if (success) {
       setIsCreateOpen(false);
@@ -123,7 +140,9 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
     const existing =
       selectedGame === "rps"
         ? await GameService.getUserActiveGame(user.id)
-        : await GameService.getUserActiveTTTGame(user.id);
+        : selectedGame === "ttt"
+        ? await GameService.getUserActiveTTTGame(user.id)
+        : await GameService.getUserActiveCoinflipGame(user.id);
 
     if (existing) {
       const existingCode = (existing as any).game_code as string | null | undefined;
@@ -200,7 +219,12 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
     });
   };
 
-  const handleJoinGame = async (gameId: string, gameBet: number, isHost: boolean, gameType: "rps" | "ttt") => {
+  const handleJoinGame = async (
+  gameId: string,
+  gameBet: number,
+  isHost: boolean,
+  gameType: "rps" | "ttt" | "coinflip"
+) => {
     if (gameBet > mmcBalance) {
       toast({
         title: t("common.error"),
@@ -227,7 +251,11 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
     setLoading(true);
 
     const { success, error } =
-      gameType === "rps" ? await GameService.joinGame(gameId) : await GameService.joinTTTGame(gameId);
+  gameType === "rps"
+    ? await GameService.joinGame(gameId)
+    : gameType === "ttt"
+    ? await GameService.joinTTTGame(gameId)
+    : await GameService.joinCoinflipGame(gameId);
 
     if (success) {
       toast({
@@ -509,7 +537,7 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
           <h2 className="text-xl font-bold font-serif">{t("game_room.lobby_title")}</h2>
 
           <div className="flex items-center gap-2">
-            <Select value={selectedGame} onValueChange={(v) => setSelectedGame(v as "rps" | "ttt")}>
+            <Select value={selectedGame} onValueChange={(v) => setSelectedGame(v as "all" | "rps" | "ttt" | "coinflip")}>
               <SelectTrigger className="w-[220px]">
                 <SelectValue placeholder={t("game_room.game_selector.label")} />
               </SelectTrigger>
@@ -517,6 +545,7 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
                 <SelectItem value="all">{t("game_room.game_selector.all")}</SelectItem>
                 <SelectItem value="rps">{t("game_room.game_selector.rps")}</SelectItem>
                 <SelectItem value="ttt">{t("game_room.game_selector.ttt")}</SelectItem>
+                <SelectItem value="coinflip">{t("game_room.game_selector.coinflip")}</SelectItem>
               </SelectContent>
             </Select>
 
@@ -549,7 +578,7 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
                     <div className="flex justify-between items-start">
                       <div className="flex gap-1">
                         <Badge variant="secondary">
-                          {game.gameType === "rps" ? t("game_room.game_selector.rps") : t("game_room.game_selector.ttt")}
+                          {game.gameType === "rps" ? t("game_room.game_selector.rps") : game.gameType === "ttt" ? t("game_room.game_selector.ttt") : t("game_room.game_selector.coinflip")}
                         </Badge>
                       </div>
                       <Badge className="bg-primary text-primary-foreground">{betBadge}</Badge>
