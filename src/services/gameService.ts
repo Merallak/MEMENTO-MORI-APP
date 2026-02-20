@@ -4,6 +4,7 @@ import type { Tables } from "@/integrations/supabase/types";
 export type RPSGame = Tables<"rps_games">;
 export type TTTGame = Tables<"ttt_games">;
 export type TTTCell = number;
+export type CoinflipGame = Tables<"coinflip_games">;
 
 export interface TTTGameWithHost extends TTTGame {
   host?: {
@@ -13,11 +14,13 @@ export interface TTTGameWithHost extends TTTGame {
 }
 export type UnifiedGameWithHost = 
   | (RPSGameWithHost & { gameType: "rps" })
-  | (TTTGameWithHost & { gameType: "ttt" });
+  | (TTTGameWithHost & { gameType: "ttt" })
+  | (CoinflipGame & { gameType: "coinflip" });
 export type GameMove = "rock" | "paper" | "scissors";
 export type GameStatus = "waiting" | "active" | "playing" | "finished" | "cancelled";
 
 type GameRpcFn =
+  | "create_coinflip_game"
   | "convert_usd_to_mmc"
   | "create_private_rps_game"
   | "create_rps_game"
@@ -349,15 +352,6 @@ export class GameService {
 
   /**
    * Handle a player leaving the game.
-   *
-   * Business rule:
-   * - If players have not comprometido/aceptado la apuesta de la ronda actual,
-   *   leaving should simply close the game room without deciding a winner.
-   * - Any rounds already played (ganadas/perdidas) siguen igual.
-   *
-   * For now, we implement the neutral behaviour by marking the game as
-   * 'cancelled'. The caller (frontend) already reacts to this status by
-   * closing the active game view.
    */
   static async forfeitGame(gameId: string): Promise<{ success: boolean; error?: string }> {
     const { error } = await supabase
@@ -375,7 +369,6 @@ export class GameService {
 
   /**
    * Propose a new bet amount for the next round.
-   * Can only be called when the game is finished.
    */
   static async proposeNewBet(gameId: string, newBet: number): Promise<{ success: boolean; error?: string }> {
     const { data, error } = await supabase.rpc("propose_new_bet" as any, {
@@ -399,7 +392,6 @@ export class GameService {
 
   /**
    * Accept a pending new bet amount.
-   * Only the non-proposer player can accept.
    */
   static async acceptNewBet(gameId: string): Promise<{ success: boolean; error?: string }> {
     const { data, error } = await supabase.rpc("accept_new_bet" as any, {
@@ -432,6 +424,26 @@ export class GameService {
     return { success: true, gameId };
   }
 
+  static async createCoinflipGame(
+  betAmount: number
+): Promise<{ success: boolean; gameId?: string; error?: string }> {
+  const { data, error } = await supabase.rpc("create_coinflip_game", {
+    p_bet_amount: betAmount
+  });
+
+  if (error) {
+    console.error("Error creating coinflip game:", error);
+    return { success: false, error: error.message };
+  }
+
+  const gameId =
+    typeof data === "string"
+      ? data
+      : (data as unknown as { game_id?: string })?.game_id;
+
+  return { success: true, gameId };
+}
+
   static async createPrivateTTTGame(betAmount: number): Promise<{ success: boolean; gameId?: string; gameCode?: string; error?: string }> {
     const { data, error } = await supabase.rpc("create_private_ttt_game", { p_bet_amount: betAmount });
     if (error) return { success: false, error: error.message };
@@ -458,6 +470,20 @@ export class GameService {
     return { success: true };
   }
 
+  static async joinCoinflipGame(
+  gameId: string
+): Promise<{ success: boolean; error?: string }> {
+  const { error } = await supabase.rpc("join_coinflip_game", {
+    p_game_id: gameId,
+  });
+
+  if (error) {
+    return { success: false, error: error.message };
+  }
+
+  return { success: true };
+}
+
   static async submitTTTMove(gameId: string, cell: TTTCell): Promise<{ success: boolean; error?: string }> {
     // backend valida 0..8, igual validamos aquí por seguridad
     if (!Number.isInteger(cell) || cell < 0 || cell > 8) {
@@ -470,21 +496,36 @@ export class GameService {
   }
 
     /**
-   * Get all available games (RPS + TTT) combined
+   * Get all available games (RPS + TTT + Coinflip) combined
    */
   static async getAllAvailableGames(): Promise<UnifiedGameWithHost[]> {
-    const [rpsGames, tttGames] = await Promise.all([
-      this.getAvailableGames(),
-      this.getAvailableTTTGames(),
-    ]);
+  const [rpsGames, tttGames, coinflipGames] = await Promise.all([
+    this.getAvailableGames(),
+    this.getAvailableTTTGames(),
+    this.getAvailableCoinflipGames(),
+  ]);
 
-    const rpsWithType: UnifiedGameWithHost[] = rpsGames.map((g) => ({ ...g, gameType: "rps" as const }));
-    const tttWithType: UnifiedGameWithHost[] = tttGames.map((g) => ({ ...g, gameType: "ttt" as const }));
+  const rpsWithType: UnifiedGameWithHost[] = rpsGames.map((g) => ({
+    ...g,
+    gameType: "rps" as const,
+  }));
 
-    return [...rpsWithType, ...tttWithType].sort(
-      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-    );
-  }
+  const tttWithType: UnifiedGameWithHost[] = tttGames.map((g) => ({
+    ...g,
+    gameType: "ttt" as const,
+  }));
+
+  const coinflipWithType: UnifiedGameWithHost[] = coinflipGames.map((g) => ({
+    ...g,
+    gameType: "coinflip" as const,
+  }));
+
+  return [...rpsWithType, ...tttWithType, ...coinflipWithType].sort(
+    (a, b) =>
+      new Date(b.created_at).getTime() -
+      new Date(a.created_at).getTime()
+  );
+}
   static async getAvailableTTTGames(): Promise<TTTGameWithHost[]> {
     const { data, error } = await supabase
       .from("ttt_games")
@@ -495,6 +536,21 @@ export class GameService {
     if (error) return [];
     return (data || []) as TTTGameWithHost[];
   }
+
+  static async getAvailableCoinflipGames(): Promise<CoinflipGame[]> {
+  const { data, error } = await supabase
+    .from("coinflip_games")
+    .select("*")
+    .eq("status", "waiting")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching available coinflip games:", error);
+    return [];
+  }
+
+  return (data || []) as CoinflipGame[];
+}
 
   static async getUserActiveTTTGame(userId: string): Promise<TTTGame | null> {
     const { data, error } = await supabase
@@ -518,6 +574,25 @@ export class GameService {
 
     return (data as TTTGame) || null;
   }
+
+  static async getUserActiveCoinflipGame(
+  userId: string
+): Promise<CoinflipGame | null> {
+  const { data, error } = await supabase
+    .from("coinflip_games")
+    .select("*")
+    .or(`host_id.eq.${userId},guest_id.eq.${userId}`)
+    .in("status", ["waiting", "active", "playing"])
+    .maybeSingle();
+
+  if (error) {
+    const code = (error as { code?: string }).code;
+    if (code === "PGRST116") return null;
+    return null;
+  }
+
+  return (data as CoinflipGame) || null;
+}
 
   static async getTTTGame(gameId: string): Promise<{ data: TTTGame | null; error: any }> {
     const { data, error } = await supabase.from("ttt_games").select("*").eq("id", gameId).single();
@@ -565,6 +640,80 @@ export class GameService {
     const arr = (data ?? []) as { success: boolean; error?: string }[];
     const first = arr[0] ?? { success: true };
     if (!first.success) return { success: false, error: first.error };
+    return { success: true };
+  }
+
+  // --------------------
+  // Coinflip (NEW METHODS)
+  // --------------------
+
+  static async getCoinflipGame(gameId: string): Promise<{ data: CoinflipGame | null; error: any }> {
+    const { data, error } = await supabase
+      .from("coinflip_games")
+      .select("*")
+      .eq("id", gameId)
+      .single();
+    return { data, error };
+  }
+
+  static subscribeToCoinflipGame(gameId: string, callback: (game: CoinflipGame) => void) {
+    const channel = supabase
+      .channel(`coinflip_game:${gameId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "coinflip_games",
+          filter: `id=eq.${gameId}`,
+        },
+        (payload) => {
+          callback(payload.new as CoinflipGame);
+        }
+      )
+      .subscribe();
+    return channel;
+  }
+
+  static async submitCoinflipChoice(
+    gameId: string, 
+    choice: "heads" | "tails"
+  ): Promise<{ success: boolean; error?: string }> {
+    const { error } = await supabase.rpc("submit_coinflip_choice" as any, {
+      p_game_id: gameId,
+      p_choice: choice,
+    });
+
+    if (error) {
+      console.error("Error submitting coinflip choice:", error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  }
+
+  static async restartCoinflipGame(gameId: string): Promise<{ success: boolean; error?: string }> {
+    const { error } = await supabase.rpc("restart_coinflip_game" as any, {
+      p_game_id: gameId,
+    });
+
+    if (error) {
+      console.error("Error restarting coinflip game:", error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  }
+
+  static async forfeitCoinflipGame(gameId: string): Promise<{ success: boolean; error?: string }> {
+    const { error } = await supabase
+      .from("coinflip_games")
+      .update({ status: "cancelled" })
+      .eq("id", gameId);
+
+    if (error) {
+      return { success: false, error: error.message };
+    }
     return { success: true };
   }
 }

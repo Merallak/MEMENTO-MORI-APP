@@ -1,14 +1,21 @@
 ﻿import { useState, useEffect } from "react";
-import { GameService, type RPSGame, type TTTGame } from "@/services/gameService";
+import {
+  GameService,
+  type RPSGame,
+  type TTTGame,
+  type CoinflipGame,
+} from "@/services/gameService";
 import { useAuth } from "@/contexts/AuthContext";
 import { GameLobby } from "./GameLobby";
 import { ActiveGame } from "./ActiveGame";
 import { ActiveTTTGame } from "./ActiveTTTGame";
+import { ActiveCoinflipGame } from "./ActiveCoinflipGame"; // IMPORTANTE: Faltaba este import
 import { Loader2 } from "lucide-react";
 
 type ActiveGameState =
   | { type: "rps"; game: RPSGame }
   | { type: "ttt"; game: TTTGame }
+  | { type: "coinflip"; game: CoinflipGame }
   | null;
 
 export function GameRoom() {
@@ -24,6 +31,7 @@ export function GameRoom() {
       return;
     }
 
+    // Check RPS
     const rps = await GameService.getUserActiveGame(user.id);
     if (rps) {
       setActiveGame({ type: "rps", game: rps });
@@ -31,9 +39,18 @@ export function GameRoom() {
       return;
     }
 
+    // Check TTT
     const ttt = await GameService.getUserActiveTTTGame(user.id);
     if (ttt) {
       setActiveGame({ type: "ttt", game: ttt });
+      setLoading(false);
+      return;
+    }
+
+    // Check Coinflip
+    const coinflip = await GameService.getUserActiveCoinflipGame(user.id);
+    if (coinflip) {
+      setActiveGame({ type: "coinflip", game: coinflip });
       setLoading(false);
       return;
     }
@@ -69,7 +86,7 @@ export function GameRoom() {
               setActiveGame(null);
             }}
           />
-        ) : (
+        ) : activeGame.type === "ttt" ? (
           <ActiveTTTGame
             game={activeGame.game}
             onGameEnd={() => {
@@ -80,7 +97,18 @@ export function GameRoom() {
               setActiveGame(null);
             }}
           />
-        )
+        ) : activeGame.type === "coinflip" ? ( // LÓGICA AGREGADA AQUÍ
+          <ActiveCoinflipGame
+            game={activeGame.game}
+            onGameEnd={() => {
+              setActiveGame(null);
+              void checkActiveGame();
+            }}
+            onLeaveGame={() => {
+              setActiveGame(null);
+            }}
+          />
+        ) : null
       ) : (
         <GameLobby onGameJoined={checkActiveGame} />
       )}

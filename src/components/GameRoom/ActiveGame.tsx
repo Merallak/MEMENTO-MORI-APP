@@ -25,11 +25,14 @@ import { toast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 
+// Extendemos el tipo para incluir las propiedades de apuestas que quizás falten en los tipos generados
+interface ExtendedRPSGame extends RPSGame {
+    host?: { full_name: string; email: string };
+    guest?: { full_name: string; email: string };
+}
+
 interface ActiveGameProps {
-    game: RPSGame & {
-        host?: { full_name: string; email: string };
-        guest?: { full_name: string; email: string };
-    };
+    game: ExtendedRPSGame;
     onGameEnd: () => void;
     onBackToLobby?: () => void;
     onLeaveGame?: () => void;
@@ -44,38 +47,33 @@ export function ActiveGame({
     const { user } = useAuth();
     const { t } = useLanguage();
 
-    const [game, setGame] = useState<
-        RPSGame & {
-            host?: { full_name: string; email: string };
-            guest?: { full_name: string; email: string };
-        }
-    >(initialGame);
-
+    const [game, setGame] = useState<ExtendedRPSGame>(initialGame);
     const [loading, setLoading] = useState(false);
+    
+    // Estado local para recordar mi movimiento inmediatamente antes de que el servidor responda
     const [myMove, setMyMove] = useState<GameMove | null>(null);
-
     const [mmcBalance, setMmcBalance] = useState<number | null>(null);
 
-    // Bet negotiation state (only used when bet_amount is not set yet)
+    // Bet negotiation state
     const [newBet, setNewBet] = useState<number | "">("");
     const [counterBet, setCounterBet] = useState<number | "">("");
     const [isBetSubmitting, setIsBetSubmitting] = useState(false);
 
-    // Leave confirmation (in-game, centered)
+    // Leave confirmation
     const [leaveOpen, setLeaveOpen] = useState(false);
 
-    // Evitar closures "viejos" en callbacks
+    // Ref para efectos
     const gameRef = useRef(game);
     useEffect(() => {
         gameRef.current = game;
     }, [game]);
 
+    // Subscription and Polling
     useEffect(() => {
-        // Realtime subscription
         const channel = GameService.subscribeToGame(initialGame.id, (updatedGame) => {
-            setGame(updatedGame);
+            setGame(updatedGame as ExtendedRPSGame);
 
-            // Si backend reseteó la ronda (moves limpios), reseteamos estado local
+            // Si se reinicia la ronda (moves nulos), limpiamos nuestro estado local
             const movesCleared = !updatedGame.host_move && !updatedGame.guest_move;
             if (movesCleared && (updatedGame.status === "active" || updatedGame.status === "playing")) {
                 setMyMove(null);
@@ -86,11 +84,10 @@ export function ActiveGame({
             }
         });
 
-        // Fallback polling
         const interval = setInterval(async () => {
             const { data } = await GameService.getGame(initialGame.id);
             if (data) {
-                setGame(data);
+                setGame(data as ExtendedRPSGame);
                 const movesCleared = !data.host_move && !data.guest_move;
                 if (movesCleared && (data.status === "active" || data.status === "playing")) {
                     setMyMove(null);
@@ -104,40 +101,23 @@ export function ActiveGame({
         };
     }, [initialGame.id, onGameEnd]);
 
+    // Balance Management (Consolidado)
     useEffect(() => {
         if (!user?.id) return;
+        
+        // Cargar al inicio y al terminar (para ver premios/pérdidas)
+        const shouldUpdate = game.status === "active" || game.status === "finished"; 
+        if (!shouldUpdate) return;
 
         let cancelled = false;
-
         const loadBalance = async () => {
             const bal = await GameService.getMmcBalance(user.id);
             if (!cancelled) setMmcBalance(bal);
         };
-
         loadBalance();
 
-        return () => {
-            cancelled = true;
-        };
-    }, [user?.id]);
-
-    useEffect(() => {
-        if (!user?.id) return;
-        if (game.status !== "finished") return;
-
-        let cancelled = false;
-
-        const refreshBalance = async () => {
-            const bal = await GameService.getMmcBalance(user.id);
-            if (!cancelled) setMmcBalance(bal);
-        };
-
-        refreshBalance();
-
-        return () => {
-            cancelled = true;
-        };
-    }, [game.status, user?.id]);
+        return () => { cancelled = true; };
+    }, [user?.id, game.status]);
 
     const handleMove = async (move: GameMove) => {
         if (!user) return;
@@ -171,10 +151,9 @@ export function ActiveGame({
                 title: t("game_room.results.new_round"),
                 description: t("game_room.results.continue_playing"),
             });
-
-            // Traer estado actualizado
+            // Force refresh
             const { data } = await GameService.getGame(game.id);
-            if (data) setGame(data);
+            if (data) setGame(data as ExtendedRPSGame);
         } else {
             toast({ title: t("common.error"), description: error, variant: "destructive" });
         }
@@ -216,10 +195,7 @@ export function ActiveGame({
             return;
         }
 
-        toast({
-            title: t("common.success"),
-            description: t("game_room.active_game.bet_proposed"),
-        });
+        toast({ title: t("common.success"), description: t("game_room.active_game.bet_proposed") });
     };
 
     const handleAcceptNewBet = async () => {
@@ -238,31 +214,23 @@ export function ActiveGame({
             return;
         }
 
-        toast({
-            title: t("common.success"),
-            description: t("game_room.active_game.bet_accepted"),
-        });
+        toast({ title: t("common.success"), description: t("game_room.active_game.bet_accepted") });
         setNewBet("");
     };
 
     const isHost = user?.id === game.host_id;
     const isGuest = user?.id === game.guest_id;
 
-    const hasMoved =
-        myMove !== null || (isHost ? !!game.host_move : !!game.guest_move);
-
+    // Lógica mejorada para determinar si he movido
+    const hasMoved = myMove !== null || (isHost ? !!game.host_move : !!game.guest_move);
     const opponentHasMoved = isHost ? !!game.guest_move : !!game.host_move;
 
     const betNotSet = game.bet_amount == null;
     const betDisplay = game.bet_amount == null ? "—" : game.bet_amount;
 
-    const hasPendingBetProposal =
-        (game as any).next_bet_amount != null &&
-        (game as any).next_bet_proposer_id != null;
-
-    const iProposedBet =
-        hasPendingBetProposal &&
-        (game as any).next_bet_proposer_id === user?.id;
+    // Tipado seguro gracias a ExtendedRPSGame
+    const hasPendingBetProposal = game.next_bet_amount != null && game.next_bet_proposer_id != null;
+    const iProposedBet = hasPendingBetProposal && game.next_bet_proposer_id === user?.id;
 
     const canNegotiateBetNow =
         (isHost || isGuest) &&
@@ -288,14 +256,9 @@ export function ActiveGame({
                         initial="hidden"
                         animate="visible"
                         exit="exit"
-                        transition={{ duration: 0.5, ease: "easeInOut" }}
-                        className="p-4 bg-stone-100 rounded-full shadow-lg"
+                        className="p-4 bg-stone-100 dark:bg-stone-800 rounded-full shadow-lg"
                     >
-                        <motion.div
-                            className="w-8 h-8 bg-stone-800 rounded-full"
-                            animate={{ scale: [1, 1.1, 1] }}
-                            transition={{ duration: 2, repeat: Infinity }}
-                        />
+                        <div className="w-8 h-8 bg-stone-600 dark:bg-stone-400 rounded-full" />
                     </motion.div>
                 );
             case "paper":
@@ -305,9 +268,9 @@ export function ActiveGame({
                         initial="hidden"
                         animate="visible"
                         exit="exit"
-                        transition={{ duration: 0.5, ease: "easeInOut" }}
+                        className="p-4 bg-blue-100 dark:bg-blue-900/30 rounded-full shadow-lg"
                     >
-                        <Scroll className="w-12 h-12 text-blue-500" />
+                        <Scroll className="w-8 h-8 text-blue-500" />
                     </motion.div>
                 );
             case "scissors":
@@ -317,24 +280,17 @@ export function ActiveGame({
                         initial="hidden"
                         animate="visible"
                         exit="exit"
-                        transition={{ duration: 0.5, ease: "easeInOut" }}
+                        className="p-4 bg-red-100 dark:bg-red-900/30 rounded-full shadow-lg"
                     >
-                        <motion.div
-                            animate={{ rotate: [0, 10, -10, 0] }}
-                            transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
-                        >
-                            <Scissors className="w-12 h-12 text-red-500" />
-                        </motion.div>
+                        <Scissors className="w-8 h-8 text-red-500" />
                     </motion.div>
                 );
             default:
+                // Estado "esperando" o "misterio"
                 return (
                     <motion.div
-                        className="w-12 h-12 bg-stone-200 rounded-full"
-                        animate={{
-                            scale: [1, 1.1, 1],
-                            opacity: [0.5, 1, 0.5],
-                        }}
+                        className="w-12 h-12 bg-stone-200 dark:bg-stone-800 rounded-full"
+                        animate={{ scale: [1, 1.1, 1], opacity: [0.5, 1, 0.5] }}
                         transition={{ duration: 1.5, repeat: Infinity }}
                     />
                 );
@@ -345,7 +301,6 @@ export function ActiveGame({
         if (game.status !== "finished") return null;
 
         const isDraw = !game.winner_id;
-
         let winner: "host" | "guest" | null = null;
         if (game.winner_id === game.host_id) winner = "host";
         else if (game.winner_id === game.guest_id) winner = "guest";
@@ -372,19 +327,15 @@ export function ActiveGame({
                     <Trophy
                         className={cn(
                             "w-16 h-16 mx-auto mb-4",
-                            winner === "host"
-                                ? "text-green-400"
-                                : winner === "guest"
-                                    ? "text-blue-400"
-                                    : "text-yellow-400"
+                            winner === "host" ? "text-green-400" : winner === "guest" ? "text-blue-400" : "text-yellow-400"
                         )}
                     />
 
-                    <h3 className="text-2xl font-bold text-white mb-2">
+                    <h3 className="text-2xl font-bold text-foreground mb-2">
                         {isDraw ? t("game_room.draw") : t("game_room.results.winner")}
                     </h3>
 
-                    <p className="text-3xl font-bold text-white mb-4">
+                    <p className="text-3xl font-bold text-foreground mb-4">
                         {winner === "host"
                             ? game.host?.full_name || (isHost ? t("game_room.results.you") : t("game_room.anonymous"))
                             : winner === "guest"
@@ -392,7 +343,7 @@ export function ActiveGame({
                                 : t("game_room.draw")}
                     </p>
 
-                    <div className="text-xl text-yellow-400 mb-6">
+                    <div className="text-xl text-yellow-500 dark:text-yellow-400 mb-6">
                         {t("game_room.results.prize")}: {betDisplay} MMC
                     </div>
 
@@ -400,7 +351,7 @@ export function ActiveGame({
                         <Button
                             onClick={handleRestart}
                             disabled={loading}
-                            className="w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white font-semibold py-3"
+                            className="w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white font-semibold py-3 hover:from-green-600 hover:to-emerald-600"
                         >
                             <RotateCcw className="w-5 h-5 mr-2" />
                             {loading ? t("common.loading") : t("game_room.results.continue_playing")}
@@ -411,7 +362,7 @@ export function ActiveGame({
                                 <Button
                                     onClick={onBackToLobby}
                                     variant="outline"
-                                    className="flex-1 border-gray-600 text-gray-300 hover:bg-gray-800"
+                                    className="flex-1"
                                 >
                                     {t("game_room.results.new_round")}
                                 </Button>
@@ -420,7 +371,7 @@ export function ActiveGame({
                             <Button
                                 onClick={onBackToLobby ?? onLeaveGame ?? onGameEnd}
                                 variant="outline"
-                                className="flex-1 border-gray-600 text-gray-300 hover:bg-gray-800"
+                                className="flex-1"
                             >
                                 <LogOut className="w-4 h-4 mr-2" />
                                 {t("game_room.actions.leave_game")}
@@ -532,7 +483,7 @@ export function ActiveGame({
                                     transition={{ duration: 0.4 }}
                                     className="space-y-8"
                                 >
-                                    {/* Bet negotiation (before playing first round) */}
+                                    {/* Bet negotiation */}
                                     {canNegotiateBetNow && (
                                         <div className="rounded-xl border border-stone-200 dark:border-stone-800 p-4 space-y-3">
                                             <div className="text-sm font-medium">
@@ -546,9 +497,7 @@ export function ActiveGame({
                                                         min={1}
                                                         value={newBet}
                                                         onChange={(e) =>
-                                                            setNewBet(
-                                                                e.target.value === "" ? "" : Number(e.target.value)
-                                                            )
+                                                            setNewBet(e.target.value === "" ? "" : Number(e.target.value))
                                                         }
                                                         className="w-28 rounded-md border px-2 py-1 text-sm bg-background text-foreground"
                                                     />
@@ -565,12 +514,12 @@ export function ActiveGame({
                                                 <div className="rounded-lg border border-amber-500/60 bg-amber-500/10 p-3 text-sm space-y-2">
                                                     {iProposedBet ? (
                                                         <p className="text-amber-200">
-                                                            {t("game_room.bet_change.pending_for_other", { amount: (game as any).next_bet_amount })}
+                                                            {t("game_room.bet_change.pending_for_other", { amount: game.next_bet_amount })}
                                                         </p>
                                                     ) : (
                                                         <>
                                                             <p className="text-amber-200">
-                                                                {t("game_room.bet_change.pending_for_you", { amount: (game as any).next_bet_amount })}
+                                                                {t("game_room.bet_change.pending_for_you", { amount: game.next_bet_amount })}
                                                             </p>
                                                             <div className="flex flex-wrap items-center gap-2">
                                                                 <Button
@@ -580,9 +529,7 @@ export function ActiveGame({
                                                                 >
                                                                     {isBetSubmitting ? t("common.loading") : t("game_room.active_game.accept_button")}
                                                                 </Button>
-
                                                                 <span className="text-muted-foreground text-xs">{t("common.or")}</span>
-
                                                                 <input
                                                                     type="number"
                                                                     min={1}
@@ -609,7 +556,6 @@ export function ActiveGame({
                                                     )}
                                                 </div>
                                             )}
-
                                             <div className="text-xs text-muted-foreground">
                                                 {t("game_room.active_game.bet_help")}
                                             </div>
@@ -644,10 +590,11 @@ export function ActiveGame({
                                                 {game.status === "finished" ? (
                                                     getMoveIcon(isHost ? game.host_move : game.guest_move)
                                                 ) : hasMoved ? (
-                                                    <div className="w-12 h-12 bg-primary rounded-full" />
+                                                    // MEJORA UX: Mostrar mi propio movimiento antes de que termine el juego
+                                                    getMoveIcon(myMove ?? (isHost ? game.host_move : game.guest_move))
                                                 ) : (
                                                     <motion.span
-                                                        className="text-4xl"
+                                                        className="text-4xl text-muted-foreground"
                                                         animate={{ opacity: [0.3, 0.6, 0.3] }}
                                                         transition={{ duration: 1.5, repeat: Infinity }}
                                                     >
@@ -661,11 +608,7 @@ export function ActiveGame({
                                             className="text-2xl font-bold text-muted-foreground"
                                             initial={{ scale: 0 }}
                                             animate={{ scale: 1 }}
-                                            transition={{
-                                                delay: 0.4,
-                                                type: "spring",
-                                                stiffness: 400,
-                                            }}
+                                            transition={{ delay: 0.4, type: "spring", stiffness: 400 }}
                                         >
                                             {t("game_room.active_game.vs")}
                                         </motion.div>
@@ -683,30 +626,24 @@ export function ActiveGame({
                                             <motion.div
                                                 className={cn(
                                                     "w-24 h-24 rounded-2xl flex items-center justify-center border-2 transition-all duration-300",
-                                                    game.status === "finished" ||
-                                                        (game.status === "active" &&
-                                                            !hasMoved &&
-                                                            opponentHasMoved)
-                                                        ? "border-stone-800 bg-stone-100 shadow-lg"
+                                                    game.status === "finished" || (game.status === "active" && !hasMoved && opponentHasMoved)
+                                                        ? "border-stone-800 bg-stone-100 dark:bg-stone-900 shadow-lg"
                                                         : "border-dashed border-stone-300"
                                                 )}
                                             >
                                                 {game.status === "finished" ? (
                                                     getMoveIcon(isHost ? game.guest_move : game.host_move)
                                                 ) : (
+                                                    // Oponente siempre oculto hasta el final
                                                     <motion.span
-                                                        className="text-4xl"
+                                                        className="text-4xl text-muted-foreground"
                                                         animate={{
                                                             opacity: [0.3, 0.6, 0.3],
                                                             rotate: [0, 5, -5, 0],
                                                         }}
                                                         transition={{
                                                             opacity: { duration: 1.5, repeat: Infinity },
-                                                            rotate: {
-                                                                duration: 2,
-                                                                repeat: Infinity,
-                                                                ease: "easeInOut",
-                                                            },
+                                                            rotate: { duration: 2, repeat: Infinity, ease: "easeInOut" },
                                                         }}
                                                     >
                                                         ?
@@ -735,20 +672,9 @@ export function ActiveGame({
 
                                                     <div className="grid grid-cols-3 gap-4">
                                                         {[
-                                                            {
-                                                                move: "rock" as GameMove,
-                                                                icon: (
-                                                                    <div className="w-8 h-8 bg-stone-800 rounded-full" />
-                                                                ),
-                                                            },
-                                                            {
-                                                                move: "paper" as GameMove,
-                                                                icon: <Scroll className="w-8 h-8" />,
-                                                            },
-                                                            {
-                                                                move: "scissors" as GameMove,
-                                                                icon: <Scissors className="w-8 h-8" />,
-                                                            },
+                                                            { move: "rock" as GameMove, icon: <div className="w-8 h-8 bg-stone-600 dark:bg-stone-400 rounded-full" /> },
+                                                            { move: "paper" as GameMove, icon: <Scroll className="w-8 h-8" /> },
+                                                            { move: "scissors" as GameMove, icon: <Scissors className="w-8 h-8" /> },
                                                         ].map((item) => (
                                                             <Button
                                                                 key={item.move}
@@ -766,6 +692,7 @@ export function ActiveGame({
                                             )}
                                     </AnimatePresence>
 
+                                    {/* Waiting State */}
                                     <AnimatePresence>
                                         {(game.status === "active" || game.status === "playing") &&
                                             hasMoved && (
@@ -784,6 +711,7 @@ export function ActiveGame({
                                             )}
                                     </AnimatePresence>
 
+                                    {/* Result */}
                                     <AnimatePresence mode="wait">
                                         {game.status === "finished" && renderResult()}
                                     </AnimatePresence>
@@ -791,7 +719,7 @@ export function ActiveGame({
                             )}
                         </AnimatePresence>
 
-                        {/* Leave game (centered, with confirmation) */}
+                        {/* Leave game dialog */}
                         <Dialog open={leaveOpen} onOpenChange={setLeaveOpen}>
                             <div className="flex justify-center pt-2">
                                 <DialogTrigger asChild>

@@ -30,8 +30,11 @@ interface ActiveTTTGameProps {
   onLeaveGame?: () => void;
 }
 
+// Función auxiliar segura para obtener el caracter
 function getCell(board: string, idx: number) {
-  const ch = board?.[idx] ?? "_";
+  // Aseguramos que el board tenga al menos longitud 9 rellenando con guiones bajos
+  const safeBoard = (board || "").padEnd(9, "_");
+  const ch = safeBoard[idx];
   return ch === "X" || ch === "O" ? ch : "_";
 }
 
@@ -58,6 +61,7 @@ export function ActiveTTTGame({ game: initialGame, onGameEnd, onBackToLobby, onL
     gameRef.current = game;
   }, [game]);
 
+  // Subscription and Polling
   useEffect(() => {
     const channel = GameService.subscribeToTTTGame(initialGame.id, (updatedGame) => {
       setGame(updatedGame);
@@ -75,8 +79,13 @@ export function ActiveTTTGame({ game: initialGame, onGameEnd, onBackToLobby, onL
     };
   }, [initialGame.id, onGameEnd]);
 
+  // Balance Management (Consolidado en un solo efecto)
   useEffect(() => {
     if (!user?.id) return;
+    
+    // Actualizar balance al montar y cuando termina el juego (para ver premios)
+    const shouldUpdate = game.status === "active" || game.status === "finished";
+    if (!shouldUpdate) return;
 
     let cancelled = false;
     (async () => {
@@ -87,47 +96,31 @@ export function ActiveTTTGame({ game: initialGame, onGameEnd, onBackToLobby, onL
     return () => {
       cancelled = true;
     };
-  }, [user?.id]);
-  // Fetch token images for host and guest
-useEffect(() => {
-  let cancelled = false;
+  }, [user?.id, game.status]);
 
-  (async () => {
-    const [hostToken, guestToken] = await Promise.all([
-      game.host_id ? DataService.getUserIssuedToken(game.host_id) : null,
-      game.guest_id ? DataService.getUserIssuedToken(game.guest_id) : null,
-    ]);
-
-    if (!cancelled) {
-      setTokenImages({
-        host: hostToken?.image_url || null,
-        guest: guestToken?.image_url || null,
-      });
-    }
-  })();
-
-  return () => { cancelled = true; };
-}, [game.host_id, game.guest_id]);
-
+  // Fetch token images
   useEffect(() => {
-    if (!user?.id) return;
-    if (game.status !== "finished") return;
-
     let cancelled = false;
     (async () => {
-      const bal = await GameService.getMmcBalance(user.id);
-      if (!cancelled) setMmcBalance(bal);
-    })();
+      const [hostToken, guestToken] = await Promise.all([
+        game.host_id ? DataService.getUserIssuedToken(game.host_id) : null,
+        game.guest_id ? DataService.getUserIssuedToken(game.guest_id) : null,
+      ]);
 
-    return () => {
-      cancelled = true;
-    };
-  }, [game.status, user?.id]);
+      if (!cancelled) {
+        setTokenImages({
+          host: hostToken?.image_url || null,
+          guest: guestToken?.image_url || null,
+        });
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [game.host_id, game.guest_id]);
 
   const isHost = user?.id === game.host_id;
   const isGuest = user?.id === game.guest_id;
 
-  // Detectar nueva ronda y mostrar animación de turno
+  // Turn Decider / Round Change Animation
   useEffect(() => {
     if (
       game.round_number > prevRoundRef.current &&
@@ -150,8 +143,9 @@ useEffect(() => {
 
   const mySymbol = isHost ? game.host_symbol : isGuest ? game.guest_symbol : null;
   const isMyTurn = !!user?.id && game.turn_player_id === user.id;
+  
   const getSymbolImage = (symbol: "X" | "O") => 
-  symbol === game.host_symbol ? tokenImages.host : tokenImages.guest;
+    symbol === game.host_symbol ? tokenImages.host : tokenImages.guest;
 
   const betNotSet = game.bet_amount == null;
   const betDisplay = game.bet_amount == null ? "—" : game.bet_amount;
@@ -159,7 +153,8 @@ useEffect(() => {
   const hasPendingBetProposal = game.next_bet_amount != null && game.next_bet_proposer_id != null;
   const iProposedBet = hasPendingBetProposal && game.next_bet_proposer_id === user?.id;
 
-  const boardEmpty = (game.board ?? "_________") === "_________";
+  const board = game.board ?? "_________";
+  const boardEmpty = board === "_________";
 
   const canNegotiateBetNow =
     (isHost || isGuest) &&
@@ -169,24 +164,23 @@ useEffect(() => {
     !!game.guest_id &&
     boardEmpty;
 
-  const handleCellClick = async (cell: number) => {
+  const handleCellClick = async (cellIdx: number) => {
     if (!user) return;
     if (!isMyTurn) return;
     if (game.bet_amount == null) return;
 
-    const board = game.board ?? "_________";
-    if (getCell(board, cell) !== "_") return;
+    // Validación segura
+    if (getCell(board, cellIdx) !== "_") return;
 
     setLoading(true);
-    const { success, error } = await GameService.submitTTTMove(game.id, cell);
+    const { success, error } = await GameService.submitTTTMove(game.id, cellIdx);
     setLoading(false);
 
     if (!success) {
       toast({ title: t("common.error"), description: error || t("game_room.errors.move_failed"), variant: "destructive" });
       return;
     }
-
-    toast({ title: t("common.success"), description: t("game_room.active_game.move_submitted") });
+    // No toast on success to keep gameplay fast, unless desired
   };
 
   const handleRestart = async () => {
@@ -200,7 +194,8 @@ useEffect(() => {
     }
 
     toast({ title: t("game_room.results.new_round"), description: t("game_room.results.continue_playing") });
-
+    
+    // Force refresh to ensure UI is in sync immediately
     const { data } = await GameService.getTTTGame(game.id);
     if (data) setGame(data);
   };
@@ -293,11 +288,6 @@ useEffect(() => {
           </Button>
 
           <div className="flex gap-2">
-            {onBackToLobby && (
-              <Button variant="outline" className="flex-1" onClick={onBackToLobby}>
-                {t("game_room.results.new_round")}
-              </Button>
-            )}
             <Button variant="outline" className="flex-1" onClick={onBackToLobby ?? onLeaveGame ?? onGameEnd}>
               <LogOut className="w-4 h-4 mr-2" />
               {t("game_room.actions.leave_game")}
@@ -308,7 +298,8 @@ useEffect(() => {
     );
   };
 
-  const board = (game.board ?? "_________").padEnd(9, "_").slice(0, 9);
+  // Safe visualization board
+  const displayBoard = (game.board ?? "").padEnd(9, "_");
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
@@ -436,14 +427,18 @@ useEffect(() => {
 
               <div className="grid grid-cols-3 gap-2">
                 {Array.from({ length: 9 }).map((_, idx) => {
-                  const cell = getCell(board, idx);
+                  const cell = getCell(displayBoard, idx);
+                  const isActive = game.status === "active" || game.status === "playing";
                   const disabled =
                     loading ||
-                    !(game.status === "active" || game.status === "playing") ||
+                    !isActive ||
                     game.bet_amount == null ||
                     !isMyTurn ||
                     cell !== "_" ||
                     !(isHost || isGuest);
+
+                  const symbol = cell as "X" | "O" | "_";
+                  const tokenImg = symbol !== "_" ? getSymbolImage(symbol) : null;
 
                   return (
                     <button
@@ -456,14 +451,14 @@ useEffect(() => {
                         "aspect-square rounded-xl border text-4xl font-bold",
                         "flex items-center justify-center",
                         "transition-colors",
-                        disabled ? "opacity-70" : "hover:bg-stone-100 dark:hover:bg-stone-900"
+                        disabled ? "opacity-70 cursor-not-allowed" : "hover:bg-stone-100 dark:hover:bg-stone-900 cursor-pointer"
                       )}
                     >
                       {cell === "_" ? "" : (
-                        getSymbolImage(cell as "X" | "O") ? (
+                        tokenImg ? (
                           <div className="w-3/4 h-3/4 rounded-full overflow-hidden">
                             <img 
-                              src={getSymbolImage(cell as "X" | "O")!} 
+                              src={tokenImg} 
                               alt={cell}
                               className="w-full h-full object-cover"
                             />

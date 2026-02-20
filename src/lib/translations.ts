@@ -461,6 +461,7 @@ export const translations = {
       mmc_balance: "MMC Balance",
       bet_amount: "Bet Amount",
       waiting_opponent: "Waiting for opponent...",
+      result_label: "Result",
       your_move: "Choose your move",
       opponent_chose: "Opponent has chosen",
       you_won: "You Won!",
@@ -469,6 +470,14 @@ export const translations = {
       rock: "Rock",
       paper: "Paper",
       scissors: "Scissors",
+
+      coinflip: {
+        heads: "Heads",
+        tails: "Tails",
+        flipping: "Flipping...",
+        select_side: "Choose Side"
+      },
+
       game_status: {
         waiting: "Waiting",
         active: "Active",
@@ -495,6 +504,7 @@ export const translations = {
       },
       results: {
         winner: "Winner",
+        loser: "Loser",
         prize: "Prize",
         play_again: "Play Again",
         continue_playing: "Continue Playing",
@@ -577,6 +587,7 @@ export const translations = {
         all: "All Games",
         rps: "Rock Paper Scissors",
         ttt: "Tic Tac Toe",
+        coinflip: "Coin Flip"
       },
       ttt: {
         your_turn: "Your turn",
@@ -1083,6 +1094,7 @@ export const translations = {
       mmc_balance: "Balance MMC",
       bet_amount: "Monto de Apuesta",
       waiting_opponent: "Esperando oponente...",
+      result_label: "Resultado",
       your_move: "Elige tu jugada",
       opponent_chose: "El oponente eligió",
       you_won: "¡Ganaste!",
@@ -1091,6 +1103,14 @@ export const translations = {
       rock: "Piedra",
       paper: "Papel",
       scissors: "Tijeras",
+      
+      coinflip: {
+        heads: "Cara",
+        tails: "Cruz",
+        flipping: "Girando...",
+        select_side: "Elige Lado"
+      },
+
       game_status: {
         waiting: "Esperando",
         active: "Activo",
@@ -1117,6 +1137,7 @@ export const translations = {
       },
       results: {
         winner: "Ganador",
+        loser: "Perdedor",
         prize: "Premio",
         play_again: "Jugar de Nuevo",
         continue_playing: "Seguir Jugando",
@@ -1199,6 +1220,7 @@ export const translations = {
         all: "Todos los Juegos",
         rps: "Piedra, papel o tijeras",
         ttt: "Gato (Tic Tac Toe)",
+        coinflip: "Volados" 
       },
       ttt: {
         your_turn: "Tu turno",
