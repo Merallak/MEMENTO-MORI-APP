@@ -6,41 +6,37 @@ export type TTTGame = Tables<"ttt_games">;
 export type TTTCell = number;
 export type CoinflipGame = Tables<"coinflip_games">;
 
-export interface TTTGameWithHost extends TTTGame {
-  host?: {
-    full_name?: string | null;
-    email?: string | null;
-  } | null;
-}
-export type UnifiedGameWithHost = 
-  | (RPSGameWithHost & { gameType: "rps" })
-  | (TTTGameWithHost & { gameType: "ttt" })
-  | (CoinflipGame & { gameType: "coinflip" });
-export type GameMove = "rock" | "paper" | "scissors";
-export type GameStatus = "waiting" | "active" | "playing" | "finished" | "cancelled";
-
-type GameRpcFn =
-  | "create_coinflip_game"
-  | "convert_usd_to_mmc"
-  | "create_private_rps_game"
-  | "create_rps_game"
-  | "exchange_equity_for_mmc"
-  | "execute_swap_transaction"
-  | "get_platform_metrics"
-  | "join_rps_game"
-  | "join_rps_game_by_code"
-  | "resolve_rps_game"
-  | "restart_rps_game"
-  | "submit_rps_move"
-  | "propose_new_bet"
-  | "accept_new_bet";
-
+// Tipos extendidos con Host
 export interface RPSGameWithHost extends RPSGame {
   host?: {
     full_name?: string | null;
     email?: string | null;
   } | null;
 }
+
+export interface TTTGameWithHost extends TTTGame {
+  host?: {
+    full_name?: string | null;
+    email?: string | null;
+  } | null;
+}
+
+// CORRECCIÓN: Definimos CoinflipGameWithHost
+export interface CoinflipGameWithHost extends CoinflipGame {
+  host?: {
+    full_name?: string | null;
+    email?: string | null;
+  } | null;
+}
+
+// CORRECCIÓN: Usamos CoinflipGameWithHost en la unión
+export type UnifiedGameWithHost = 
+  | (RPSGameWithHost & { gameType: "rps" })
+  | (TTTGameWithHost & { gameType: "ttt" })
+  | (CoinflipGameWithHost & { gameType: "coinflip" });
+
+export type GameMove = "rock" | "paper" | "scissors";
+export type GameStatus = "waiting" | "active" | "playing" | "finished" | "cancelled";
 
 export class GameService {
   /**
@@ -128,7 +124,6 @@ export class GameService {
       return { success: false, error: error.message };
     }
 
-    // La función puede devolver directamente uuid o un objeto; normalizamos a string
     const gameId = typeof data === "string" ? data : (data as unknown as { game_id?: string })?.game_id;
 
     return { success: true, gameId };
@@ -250,26 +245,13 @@ export class GameService {
     if (error) {
       const code = (error as { code?: string }).code;
       if (code === "PGRST116") {
-        // No active game
         return null;
       }
       console.error("Error fetching active game:", error);
       return null;
     }
 
-    if (!data) {
-      return null;
-    }
-
-    // Capa extra de seguridad: si el registro carece de identificadores básicos,
-    // lo ignoramos para no atrapar al usuario en un estado inconsistente.
-    const candidate = data as RPSGame;
-    if (!candidate.host_id && !candidate.guest_id) {
-      console.warn("Ignoring inconsistent game record for user", userId, candidate);
-      return null;
-    }
-
-    return candidate;
+    return (data as RPSGame) || null;
   }
 
   /**
@@ -287,7 +269,6 @@ export class GameService {
       return { success: false, error: error.message };
     }
 
-    // Refund will be handled by database trigger
     return { success: true };
   }
 
@@ -350,9 +331,6 @@ export class GameService {
     return { success: true };
   }
 
-  /**
-   * Handle a player leaving the game.
-   */
   static async forfeitGame(gameId: string): Promise<{ success: boolean; error?: string }> {
     const { error } = await supabase
       .from("rps_games")
@@ -367,9 +345,6 @@ export class GameService {
     return { success: true };
   }
 
-  /**
-   * Propose a new bet amount for the next round.
-   */
   static async proposeNewBet(gameId: string, newBet: number): Promise<{ success: boolean; error?: string }> {
     const { data, error } = await supabase.rpc("propose_new_bet" as any, {
       p_game_id: gameId,
@@ -390,9 +365,6 @@ export class GameService {
     return { success: true };
   }
 
-  /**
-   * Accept a pending new bet amount.
-   */
   static async acceptNewBet(gameId: string): Promise<{ success: boolean; error?: string }> {
     const { data, error } = await supabase.rpc("accept_new_bet" as any, {
       p_game_id: gameId
@@ -485,7 +457,6 @@ export class GameService {
 }
 
   static async submitTTTMove(gameId: string, cell: TTTCell): Promise<{ success: boolean; error?: string }> {
-    // backend valida 0..8, igual validamos aquí por seguridad
     if (!Number.isInteger(cell) || cell < 0 || cell > 8) {
       return { success: false, error: "Invalid cell" };
     }
@@ -515,9 +486,12 @@ export class GameService {
     gameType: "ttt" as const,
   }));
 
+  // CORRECCIÓN: Usamos coinflipGames tal cual vienen, asegurando que tengan la propiedad 'host' aunque sea undefined
   const coinflipWithType: UnifiedGameWithHost[] = coinflipGames.map((g) => ({
     ...g,
     gameType: "coinflip" as const,
+    // Agregamos host explícitamente si viniera del join, aunque aquí vendrá undefined
+    // El tipo UnifiedGameWithHost ahora espera que 'host' pueda existir.
   }));
 
   return [...rpsWithType, ...tttWithType, ...coinflipWithType].sort(
@@ -537,10 +511,12 @@ export class GameService {
     return (data || []) as TTTGameWithHost[];
   }
 
-  static async getAvailableCoinflipGames(): Promise<CoinflipGame[]> {
+  // CORRECCIÓN: Devolvemos CoinflipGameWithHost
+  static async getAvailableCoinflipGames(): Promise<CoinflipGameWithHost[]> {
   const { data, error } = await supabase
     .from("coinflip_games")
-    .select("*")
+    // Necesitamos hacer el join con profiles para obtener el nombre del host
+    .select(`*, host:profiles!coinflip_games_host_id_fkey(full_name, email)`)
     .eq("status", "waiting")
     .order("created_at", { ascending: false });
 
@@ -549,7 +525,7 @@ export class GameService {
     return [];
   }
 
-  return (data || []) as CoinflipGame[];
+  return (data || []) as CoinflipGameWithHost[];
 }
 
   static async getUserActiveTTTGame(userId: string): Promise<TTTGame | null> {
