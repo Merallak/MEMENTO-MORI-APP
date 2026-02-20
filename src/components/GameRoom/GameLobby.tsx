@@ -18,7 +18,7 @@ import { GameService, type UnifiedGameWithHost } from "@/services/gameService";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
-import { Plus, RefreshCcw, Coins, DollarSign, Swords, Percent, AlertTriangle, Users, Copy, Check } from "lucide-react";
+import { Plus, RefreshCcw, Coins, DollarSign, Swords, Percent, AlertTriangle, Users, Copy, Check, Info } from "lucide-react";
 
 interface GameLobbyProps {
   onGameJoined: () => void;
@@ -28,7 +28,12 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
   const { user } = useAuth();
   const { t } = useLanguage();
 
+  // Filtro de la lista
   const [selectedGame, setSelectedGame] = useState<"all" | "rps" | "ttt" | "coinflip">("all");
+  
+  // Selección explicita para CREAR juego
+  const [createGameType, setCreateGameType] = useState<"rps" | "ttt" | "coinflip">("rps");
+
   const [games, setGames] = useState<UnifiedGameWithHost[]>([]);
   const [loading, setLoading] = useState(false);
   const [mmcBalance, setMmcBalance] = useState(0);
@@ -50,6 +55,13 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
   const [joinCode, setJoinCode] = useState<string>("");
   const [codeCopied, setCodeCopied] = useState(false);
 
+  // Sincronizar el tipo de creación con el filtro actual (UX)
+  useEffect(() => {
+    if (selectedGame !== "all") {
+      setCreateGameType(selectedGame);
+    }
+  }, [selectedGame]);
+
   const loadData = async () => {
     if (!user) return;
     setLoading(true);
@@ -61,22 +73,22 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
     setHasExchanged(exchanged);
 
     const availableGames =
-  selectedGame === "all"
-    ? await GameService.getAllAvailableGames()
-    : selectedGame === "rps"
-    ? (await GameService.getAvailableGames()).map((g) => ({
-        ...g,
-        gameType: "rps" as const,
-      }))
-    : selectedGame === "ttt"
-    ? (await GameService.getAvailableTTTGames()).map((g) => ({
-        ...g,
-        gameType: "ttt" as const,
-      }))
-    : (await GameService.getAvailableCoinflipGames()).map((g) => ({
-        ...g,
-        gameType: "coinflip" as const,
-      }));
+      selectedGame === "all"
+        ? await GameService.getAllAvailableGames()
+        : selectedGame === "rps"
+        ? (await GameService.getAvailableGames()).map((g) => ({
+            ...g,
+            gameType: "rps" as const,
+          }))
+        : selectedGame === "ttt"
+        ? (await GameService.getAvailableTTTGames()).map((g) => ({
+            ...g,
+            gameType: "ttt" as const,
+          }))
+        : (await GameService.getAvailableCoinflipGames()).map((g) => ({
+            ...g,
+            gameType: "coinflip" as const,
+          }));
       
     setGames(availableGames);
     setLoading(false);
@@ -94,10 +106,11 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
 
     setCreateLoading(true);
 
+    // Verificar si ya tiene juego activo del tipo seleccionado
     const existing =
-      selectedGame === "rps"
+      createGameType === "rps"
         ? await GameService.getUserActiveGame(user.id)
-        : selectedGame === "ttt"
+        : createGameType === "ttt"
         ? await GameService.getUserActiveTTTGame(user.id)
         : await GameService.getUserActiveCoinflipGame(user.id);
 
@@ -108,14 +121,19 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
       return;
     }
 
-    const { success, error } =
-      selectedGame === "rps"
-        ? await GameService.createGame(0)
-        : selectedGame === "ttt"
-        ? await GameService.createTTTGame(0)
-        : await GameService.createCoinflipGame(0);
+    // Crear juego explícitamente según la selección del modal
+    let result: { success: boolean; error?: string };
 
-    if (success) {
+    if (createGameType === "rps") {
+      result = await GameService.createGame(0);
+    } else if (createGameType === "ttt") {
+      result = await GameService.createTTTGame(0);
+    } else {
+      // Coinflip: Enviamos 0 como apuesta inicial placeholder
+      result = await GameService.createCoinflipGame(0);
+    }
+
+    if (result.success) {
       setIsCreateOpen(false);
       toast({
         title: t("game_room.create_game_modal.created_title"),
@@ -125,7 +143,7 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
     } else {
       toast({
         title: t("common.error"),
-        description: error || t("game_room.errors.create_failed"),
+        description: result.error || t("game_room.errors.create_failed"),
         variant: "destructive",
       });
     }
@@ -137,12 +155,13 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
     if (!user) return;
     setCreateLoading(true);
 
+    // Private games logic (Currently only implemented for RPS/TTT in service)
+    const typeToCreate = createGameType === "coinflip" ? "rps" : createGameType; // Fallback safe
+
     const existing =
-      selectedGame === "rps"
+      typeToCreate === "rps"
         ? await GameService.getUserActiveGame(user.id)
-        : selectedGame === "ttt"
-        ? await GameService.getUserActiveTTTGame(user.id)
-        : await GameService.getUserActiveCoinflipGame(user.id);
+        : await GameService.getUserActiveTTTGame(user.id);
 
     if (existing) {
       const existingCode = (existing as any).game_code as string | null | undefined;
@@ -159,7 +178,7 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
     }
 
     const { success, gameCode, error } =
-      selectedGame === "rps"
+      typeToCreate === "rps"
         ? await GameService.createPrivateGame(0)
         : await GameService.createPrivateTTTGame(0);
 
@@ -185,12 +204,14 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
 
     setCreateLoading(true);
 
-    const { success, error } =
-      selectedGame === "rps"
-        ? await GameService.joinGameByCode(joinCode.trim())
-        : await GameService.joinTTTGameByCode(joinCode.trim());
+    // Intenta unirse primero como RPS, si falla intenta TTT
+    // (Mejora futura: El código podría indicar el tipo, o probamos ambos)
+    let result = await GameService.joinGameByCode(joinCode.trim());
+    if (!result.success) {
+        result = await GameService.joinTTTGameByCode(joinCode.trim());
+    }
 
-    if (success) {
+    if (result.success) {
       setIsJoinCodeOpen(false);
       setJoinCode("");
       toast({
@@ -201,7 +222,7 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
     } else {
       toast({
         title: t("common.error"),
-        description: error || t("game_room.errors.join_failed"),
+        description: result.error || t("game_room.errors.join_failed"),
         variant: "destructive",
       });
     }
@@ -220,11 +241,11 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
   };
 
   const handleJoinGame = async (
-  gameId: string,
-  gameBet: number,
-  isHost: boolean,
-  gameType: "rps" | "ttt" | "coinflip"
-) => {
+    gameId: string,
+    gameBet: number,
+    isHost: boolean,
+    gameType: "rps" | "ttt" | "coinflip"
+  ) => {
     if (gameBet > mmcBalance) {
       toast({
         title: t("common.error"),
@@ -240,22 +261,27 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
     }
 
     if (user) {
-      const { data } =
-        gameType === "rps" ? await GameService.getGame(gameId) : await GameService.getTTTGame(gameId);
-      if (data && data.host_id === user.id) {
-        onGameJoined();
-        return;
+        // Optimistic check
+      if (gameType === "rps") {
+          const { data } = await GameService.getGame(gameId);
+          if (data && data.host_id === user.id) { onGameJoined(); return; }
+      } else if (gameType === "ttt") {
+          const { data } = await GameService.getTTTGame(gameId);
+          if (data && data.host_id === user.id) { onGameJoined(); return; }
+      } else {
+          const { data } = await GameService.getCoinflipGame(gameId);
+          if (data && data.host_id === user.id) { onGameJoined(); return; }
       }
     }
 
     setLoading(true);
 
     const { success, error } =
-  gameType === "rps"
-    ? await GameService.joinGame(gameId)
-    : gameType === "ttt"
-    ? await GameService.joinTTTGame(gameId)
-    : await GameService.joinCoinflipGame(gameId);
+      gameType === "rps"
+        ? await GameService.joinGame(gameId)
+        : gameType === "ttt"
+        ? await GameService.joinTTTGame(gameId)
+        : await GameService.joinCoinflipGame(gameId);
 
     if (success) {
       toast({
@@ -373,6 +399,30 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
                     <DialogTitle>{t("game_room.create_game_modal.title")}</DialogTitle>
                     <DialogDescription>{t("game_room.create_game_modal.created_desc")}</DialogDescription>
                   </DialogHeader>
+                  
+                  {/* GAME SELECTOR IN MODAL */}
+                  <div className="py-4 space-y-3">
+                      <label className="text-sm font-medium">{t("game_room.game_selector.label")}</label>
+                      <Select 
+                        value={createGameType} 
+                        onValueChange={(v) => setCreateGameType(v as "rps" | "ttt" | "coinflip")}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="rps">{t("game_room.game_selector.rps")}</SelectItem>
+                          <SelectItem value="ttt">{t("game_room.game_selector.ttt")}</SelectItem>
+                          <SelectItem value="coinflip">{t("game_room.game_selector.coinflip")}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      
+                      {/* Info about negotiation */}
+                      <div className="flex items-start gap-2 p-3 bg-stone-100 dark:bg-stone-800 rounded text-sm text-muted-foreground">
+                          <Info className="w-4 h-4 mt-0.5" />
+                          <span>{t("game_room.active_game.bet_help")}</span>
+                      </div>
+                  </div>
 
                   <DialogFooter>
                     <Button variant="outline" onClick={() => setIsCreateOpen(false)}>
@@ -387,7 +437,12 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
             </TabsContent>
 
             <TabsContent value="private" className="space-y-3">
-              <p className="text-sm text-muted-foreground text-center">{t("game_room.private.description")}</p>
+              {/* Private game UI remains similar but simplified for now */}
+               <div className="text-center py-4">
+                  <p className="text-sm text-muted-foreground mb-4">{t("game_room.private.description")}</p>
+                   {/* ... (Join logic is handled by dialogs below) ... */}
+               </div>
+               
               <div className="grid grid-cols-2 gap-2">
                 <Dialog
                   open={isPrivateGameOpen}
@@ -411,6 +466,30 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
                       <DialogTitle>{t("game_room.private.title")}</DialogTitle>
                       <DialogDescription>{t("game_room.private.subtitle")}</DialogDescription>
                     </DialogHeader>
+
+                     {/* Add Selector for Private Game too */}
+                     {!privateGameCode && (
+                        <div className="py-2">
+                            <label className="text-sm font-medium mb-1 block">{t("game_room.game_selector.label")}</label>
+                             <Select 
+                                value={createGameType} 
+                                onValueChange={(v) => setCreateGameType(v as "rps" | "ttt" | "coinflip")}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="rps">{t("game_room.game_selector.rps")}</SelectItem>
+                                  <SelectItem value="ttt">{t("game_room.game_selector.ttt")}</SelectItem>
+                                  {/* Coinflip private not fully supported in service yet, maybe hide? kept for consistency */}
+                                   <SelectItem value="coinflip">{t("game_room.game_selector.coinflip")}</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              {createGameType === "coinflip" && (
+                                  <p className="text-xs text-amber-500 mt-2">Private Coin Flip coming soon. Defaulting to RPS.</p>
+                              )}
+                        </div>
+                     )}
 
                     {!privateGameCode ? (
                       <DialogFooter>
