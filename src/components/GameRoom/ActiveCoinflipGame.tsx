@@ -15,9 +15,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { DataService } from "@/lib/dataService";
 import { GameService, type CoinflipGame } from "@/services/gameService";
-import { Loader2, LogOut, RotateCcw, Trophy, Coins } from "lucide-react";
+import { LogOut, RotateCcw, Trophy, Coins } from "lucide-react";
 
 interface ActiveCoinflipGameProps {
   game: CoinflipGame;
@@ -39,12 +38,6 @@ export function ActiveCoinflipGame({
   const [loading, setLoading] = useState(false);
   const [mmcBalance, setMmcBalance] = useState<number | null>(null);
   
-  // @ts-ignore - unused but kept for structure consistency with other games
-  const [tokenImages, setTokenImages] = useState<{ host: string | null; guest: string | null }>({
-    host: null,
-    guest: null,
-  });
-
   const [leaveOpen, setLeaveOpen] = useState(false);
   const [flipping, setFlipping] = useState(false);
 
@@ -87,26 +80,6 @@ export function ActiveCoinflipGame({
     };
   }, [user?.id, game.status]); // Refetch on status change (payout)
 
-  // Token Images
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      const [hostToken, guestToken] = await Promise.all([
-        game.host_id ? DataService.getUserIssuedToken(game.host_id) : null,
-        game.guest_id ? DataService.getUserIssuedToken(game.guest_id) : null,
-      ]);
-      if (!cancelled) {
-        setTokenImages({
-          host: hostToken?.image_url || null,
-          guest: guestToken?.image_url || null,
-        });
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [game.host_id, game.guest_id]);
-
   const isHost = user?.id === game.host_id;
   const betDisplay = game.bet_amount == null ? "—" : game.bet_amount;
 
@@ -132,8 +105,6 @@ export function ActiveCoinflipGame({
       description: t("game_room.active_game.move_submitted"),
     });
 
-    // If playing against house (future feature), start flip animation locally
-    // For now, assume PVP logic mainly
     if (game.mode === "house") {
       setFlipping(true);
     }
@@ -168,12 +139,9 @@ export function ActiveCoinflipGame({
   const renderResult = () => {
     if (game.status !== "finished") return null;
 
-    // Logic for winner display
     const iWon = game.winner_id === user?.id;
     const resultText = iWon ? t("game_room.results.winner") : t("game_room.results.loser");
     const resultColor = iWon ? "text-green-500" : "text-red-500";
-    
-    // Result Coin Display
     const isHeads = game.result === "heads";
 
     return (
@@ -236,7 +204,6 @@ export function ActiveCoinflipGame({
         </CardHeader>
 
         <CardContent className="space-y-8">
-            {/* Coin Animation Area */}
             <div className="flex justify-center py-8">
                 <div className={cn(
                     "w-32 h-32 rounded-full border-4 border-yellow-500 bg-yellow-100 dark:bg-yellow-900/20 flex items-center justify-center relative",
@@ -256,7 +223,6 @@ export function ActiveCoinflipGame({
                {flipping ? t("game_room.coinflip.flipping") : ""}
             </div>
 
-            {/* Game Controls */}
             {game.status === "active" && (
                 <div className="space-y-4">
                     {waitingForOpponent ? (
@@ -295,7 +261,6 @@ export function ActiveCoinflipGame({
 
             {renderResult()}
 
-            {/* Leave Dialog */}
             <Dialog open={leaveOpen} onOpenChange={setLeaveOpen}>
             <div className="flex justify-center pt-2">
               <DialogTrigger asChild>
