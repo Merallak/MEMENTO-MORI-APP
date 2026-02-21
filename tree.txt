@@ -22,7 +22,6 @@ src/components/AMM.tsx
 src/components/AuthModal.tsx
 src/components/ChatBot.tsx
 src/components/GameRoom/ActiveCoinflipGame.tsx
-src/components/GameRoom/ActiveGame.tsx
 src/components/GameRoom/ActiveRPSGame.tsx
 src/components/GameRoom/ActiveTTTGame.tsx
 src/components/GameRoom/GameLobby.tsx
