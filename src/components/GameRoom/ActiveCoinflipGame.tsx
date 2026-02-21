@@ -17,14 +17,16 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { GameService, type CoinflipGame } from "@/services/gameService";
-import { LogOut, RotateCcw, Trophy, Coins, Check, X, AlertTriangle } from "lucide-react";
+import { LogOut, RotateCcw, Trophy, Coins, Check, AlertTriangle, Loader2 } from "lucide-react";
+import { motion } from "framer-motion";
 
-// Extendemos el tipo localmente ya que DB types no tiene las columnas nuevas aún
+// Extendemos el tipo localmente ya que database.types.ts está desactualizado
+// pero CONFIRMAMOS que las columnas existen en la DB.
 type ExtendedCoinflipGame = CoinflipGame & {
   next_bet_amount?: number | null;
   next_bet_proposer_id?: string | null;
-  host?: { full_name?: string | null };
-  guest?: { full_name?: string | null };
+  host?: { full_name?: string | null; email?: string | null } | null;
+  guest?: { full_name?: string | null; email?: string | null } | null;
 };
 
 interface ActiveCoinflipGameProps {
@@ -47,11 +49,13 @@ export function ActiveCoinflipGame({
   const [loading, setLoading] = useState(false);
   const [mmcBalance, setMmcBalance] = useState<number | null>(null);
   
-  // Betting UI state
+  // Estados de Apuestas
   const [betAmount, setBetAmount] = useState<string>("");
   const [isProposing, setIsProposing] = useState(false);
   
   const [leaveOpen, setLeaveOpen] = useState(false);
+  
+  // Animación local
   const [flipping, setFlipping] = useState(false);
 
   const gameRef = useRef(game);
@@ -62,7 +66,9 @@ export function ActiveCoinflipGame({
   // Subscription and Polling
   useEffect(() => {
     const channel = GameService.subscribeToCoinflipGame(initialGame.id, (updatedGame) => {
-      setGame((prev) => ({ ...prev, ...updatedGame })); // Merge updates
+      setGame((prev) => ({ ...prev, ...updatedGame })); 
+      
+      // Detener animación si llega resultado
       if (updatedGame.status === "finished" && updatedGame.result) {
         setFlipping(false);
       }
@@ -71,7 +77,7 @@ export function ActiveCoinflipGame({
 
     const interval = setInterval(async () => {
       const { data } = await GameService.getCoinflipGame(initialGame.id);
-      if (data) setGame(data);
+      if (data) setGame(data as ExtendedCoinflipGame);
     }, 3000);
 
     return () => {
@@ -96,7 +102,7 @@ export function ActiveCoinflipGame({
   const isHost = user?.id === game.host_id;
   const currentBet = game.bet_amount ?? 0;
   
-  // Logic for Betting Negotiation
+  // Lógica de Negociación de Apuestas
   const hasProposedBet = game.next_bet_amount != null && game.next_bet_amount > 0;
   const iAmProposer = game.next_bet_proposer_id === user?.id;
   const waitingForAccept = hasProposedBet && iAmProposer;
@@ -115,6 +121,7 @@ export function ActiveCoinflipGame({
     }
 
     setIsProposing(true);
+    // Llamada segura ya que verificamos que la función existe
     const { success, error } = await GameService.proposeNewCoinflipBet(game.id, amount);
     setIsProposing(false);
 
@@ -151,7 +158,7 @@ export function ActiveCoinflipGame({
   const handleChoice = async (choice: "heads" | "tails") => {
     if (!user) return;
     
-    // Prevent move if bet pending
+    // Prevenir movimiento si hay apuesta pendiente
     if (hasProposedBet) {
         toast({
             title: t("common.error"),
@@ -168,6 +175,7 @@ export function ActiveCoinflipGame({
     setLoading(false);
 
     if (!success) {
+      setFlipping(false);
       toast({
         title: t("common.error"),
         description: error || t("game_room.errors.move_failed"),
@@ -180,10 +188,6 @@ export function ActiveCoinflipGame({
       title: t("common.success"),
       description: t("game_room.active_game.move_submitted"),
     });
-
-    if (game.mode === "house") {
-      setFlipping(true);
-    }
   };
 
   const handleRestart = async () => {
@@ -221,7 +225,7 @@ export function ActiveCoinflipGame({
     const isHeads = game.result === "heads";
 
     return (
-      <div className="mt-6 rounded-xl border border-stone-200 dark:border-stone-800 p-6 text-center space-y-4">
+      <div className="mt-6 rounded-xl border border-stone-200 dark:border-stone-800 p-6 text-center space-y-4 bg-stone-50/50 dark:bg-stone-900/50">
         <Trophy className={cn("w-12 h-12 mx-auto", iWon ? "text-yellow-500" : "text-stone-400")} />
         
         <div className="space-y-1">
@@ -234,8 +238,8 @@ export function ActiveCoinflipGame({
         <div className={cn("text-2xl font-bold", resultColor)}>{resultText}</div>
         
         {iWon && (
-          <div className="text-muted-foreground">
-            {t("game_room.results.prize")}: {currentBet} {t("mmc.short")}
+          <div className="text-muted-foreground font-medium">
+            {t("game_room.results.prize")}: <span className="text-yellow-500">{currentBet} {t("mmc.short")}</span>
           </div>
         )}
 
@@ -256,14 +260,16 @@ export function ActiveCoinflipGame({
     );
   };
 
-  const myChoice = isHost ? game.guest_choice : game.host_choice; // Fix logic: if I am host, my choice is host_choice
-  const actualMyChoice = isHost ? game.host_choice : game.guest_choice;
-  const waitingForOpponent = actualMyChoice && game.status === "active";
+  // Determinar elecciones
+  const myChoice = isHost ? game.host_choice : game.guest_choice;
+  const actualMyChoice = myChoice; 
+  const waitingForOpponent = actualMyChoice && !game.result && game.status === "active";
 
-  // Render Betting Section
+  // --- UI de Apuestas ---
   const renderBetting = () => {
+      // Solo mostrar apuestas si estamos waiting o active, Y NO estamos jugando ya (moneda en aire o elegida)
       if (game.status !== 'waiting' && game.status !== 'active') return null;
-      if (waitingForOpponent || game.result) return null; // Don't show while playing
+      if (waitingForOpponent || game.result) return null; 
 
       return (
         <div className="bg-stone-50 dark:bg-stone-900/50 p-4 rounded-lg border border-dashed border-stone-200 dark:border-stone-800 mb-6">
@@ -279,11 +285,10 @@ export function ActiveCoinflipGame({
                          <span>{t("game_room.active_game.opponent_proposed", { amount: game.next_bet_amount })}</span>
                     </div>
                     <div className="flex gap-2">
-                         <Button onClick={handleAcceptBet} disabled={loading} className="w-full bg-green-600 hover:bg-green-700">
+                         <Button onClick={handleAcceptBet} disabled={loading} className="w-full bg-green-600 hover:bg-green-700 text-white">
                              <Check className="w-4 h-4 mr-2" />
                              {t("common.accept")}
                          </Button>
-                         {/* Reject logic could be implemented by proposing previous bet, for now simplified */}
                     </div>
                  </div>
             ) : waitingForAccept ? (
@@ -320,7 +325,7 @@ export function ActiveCoinflipGame({
 
   return (
     <div className="max-w-xl mx-auto space-y-6">
-      <Card className="border-2 shadow-lg">
+      <Card className="border-2 shadow-lg transition-all duration-300">
         <CardHeader className="text-center pb-2">
           <Badge variant={game.status === "active" ? "default" : "secondary"} className="mx-auto mb-2">
             {t(`game_room.game_status.${game.status}` as any)}
@@ -344,15 +349,18 @@ export function ActiveCoinflipGame({
 
         <CardContent className="space-y-6">
             
-            {/* Apuestas UI */}
+            {/* UI de Apuestas */}
             {renderBetting()}
 
             {/* Coin Animation */}
             <div className="flex justify-center py-6">
-                <div className={cn(
-                    "w-32 h-32 rounded-full border-4 border-yellow-500 bg-gradient-to-br from-yellow-300 to-yellow-600 shadow-xl flex items-center justify-center relative transition-all duration-1000",
-                    (flipping || (game.status === 'active' && !actualMyChoice)) ? "animate-spin-slow" : ""
-                )}>
+                 <motion.div 
+                    className={cn(
+                        "w-32 h-32 rounded-full border-4 border-yellow-500 bg-gradient-to-br from-yellow-300 to-yellow-600 shadow-xl flex items-center justify-center relative",
+                    )}
+                    animate={flipping || (!game.result && game.status === 'active' && !actualMyChoice) ? { rotateY: 360 } : { rotateY: 0 }}
+                    transition={flipping ? { duration: 0.5, repeat: Infinity, ease: "linear" } : { duration: 0.5 }}
+                >
                      {game.result ? (
                          <span className="text-5xl font-black text-white drop-shadow-md">
                              {game.result === 'heads' ? "H" : "T"}
@@ -360,10 +368,10 @@ export function ActiveCoinflipGame({
                      ) : (
                         <Coins className="w-16 h-16 text-white" />
                      )}
-                </div>
+                </motion.div>
             </div>
             
-            <div className="text-center text-sm font-medium h-6">
+            <div className="text-center text-sm font-medium h-6 text-yellow-600">
                {flipping ? t("game_room.coinflip.flipping") : ""}
             </div>
 
@@ -386,7 +394,7 @@ export function ActiveCoinflipGame({
                              <div className="grid grid-cols-2 gap-4">
                                 <Button 
                                     size="lg" 
-                                    className="h-28 text-2xl font-bold border-2 border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-900 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 hover:border-yellow-500 transition-all" 
+                                    className="h-28 text-2xl font-bold border-2 border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-900 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 hover:border-yellow-500 transition-all text-stone-800 dark:text-stone-200" 
                                     variant="outline"
                                     onClick={() => handleChoice("heads")}
                                     disabled={loading || waitingForAccept || waitingForMeToAccept}
@@ -398,7 +406,7 @@ export function ActiveCoinflipGame({
                                 </Button>
                                 <Button 
                                     size="lg" 
-                                    className="h-28 text-2xl font-bold border-2 border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-900 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 hover:border-yellow-500 transition-all" 
+                                    className="h-28 text-2xl font-bold border-2 border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-900 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 hover:border-yellow-500 transition-all text-stone-800 dark:text-stone-200" 
                                     variant="outline"
                                     onClick={() => handleChoice("tails")}
                                     disabled={loading || waitingForAccept || waitingForMeToAccept}
