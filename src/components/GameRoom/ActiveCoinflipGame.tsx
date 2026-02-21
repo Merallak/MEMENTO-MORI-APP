@@ -17,10 +17,9 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { GameService, type CoinflipGame } from "@/services/gameService";
-import { LogOut, RotateCcw, Trophy, Coins, Check, AlertTriangle } from "lucide-react";
+import { LogOut, RotateCcw, Trophy, Coins, Check, AlertTriangle, Lock } from "lucide-react"; // Añadido Lock icon
 import { motion } from "framer-motion";
 
-// Extendemos el tipo localmente ya que database.types.ts está desactualizado
 type ExtendedCoinflipGame = CoinflipGame & {
   next_bet_amount?: number | null;
   next_bet_proposer_id?: string | null;
@@ -48,13 +47,10 @@ export function ActiveCoinflipGame({
   const [loading, setLoading] = useState(false);
   const [mmcBalance, setMmcBalance] = useState<number | null>(null);
   
-  // Estados de Apuestas
   const [betAmount, setBetAmount] = useState<string>("");
   const [isProposing, setIsProposing] = useState(false);
   
   const [leaveOpen, setLeaveOpen] = useState(false);
-  
-  // Animación local
   const [flipping, setFlipping] = useState(false);
 
   const gameRef = useRef(game);
@@ -62,12 +58,10 @@ export function ActiveCoinflipGame({
     gameRef.current = game;
   }, [game]);
 
-  // Subscription and Polling
   useEffect(() => {
     const channel = GameService.subscribeToCoinflipGame(initialGame.id, (updatedGame) => {
       setGame((prev) => ({ ...prev, ...updatedGame })); 
       
-      // Detener animación si llega resultado
       if (updatedGame.status === "finished" && updatedGame.result) {
         setFlipping(false);
       }
@@ -85,7 +79,6 @@ export function ActiveCoinflipGame({
     };
   }, [initialGame.id, onGameEnd]);
 
-  // Balance Fetching
   useEffect(() => {
     if (!user?.id) return;
     let cancelled = false;
@@ -101,7 +94,6 @@ export function ActiveCoinflipGame({
   const isHost = user?.id === game.host_id;
   const currentBet = game.bet_amount ?? 0;
   
-  // Lógica de Negociación de Apuestas
   const hasProposedBet = game.next_bet_amount != null && game.next_bet_amount > 0;
   const iAmProposer = game.next_bet_proposer_id === user?.id;
   const waitingForAccept = hasProposedBet && iAmProposer;
@@ -258,8 +250,12 @@ export function ActiveCoinflipGame({
   };
 
   const myChoice = isHost ? game.host_choice : game.guest_choice;
+  // LÓGICA NUEVA: Identificar qué eligió el oponente
+  const opponentChoice = isHost ? game.guest_choice : game.host_choice;
+  
   const actualMyChoice = myChoice; 
-  const waitingForOpponent = actualMyChoice && !game.result && game.status === "active";
+  const isGameActive = game.status === "active" || game.status === "playing";
+  const waitingForOpponent = actualMyChoice && !game.result && isGameActive;
 
   const renderBetting = () => {
       if (game.status !== 'waiting' && game.status !== 'active') return null;
@@ -350,8 +346,8 @@ export function ActiveCoinflipGame({
                     className={cn(
                         "w-32 h-32 rounded-full border-4 border-yellow-500 bg-gradient-to-br from-yellow-300 to-yellow-600 shadow-xl flex items-center justify-center relative",
                     )}
-                    animate={flipping || (!game.result && game.status === 'active' && !actualMyChoice) ? { rotateY: 360 } : { rotateY: 0 }}
-                    transition={flipping ? { duration: 0.5, repeat: Infinity, ease: "linear" } : { duration: 0.5 }}
+                    animate={flipping || (game.status === 'playing' && !game.result) ? { rotateY: 360 } : { rotateY: 0 }}
+                    transition={{ duration: 0.5, repeat: Infinity, ease: "linear" }}
                 >
                      {game.result ? (
                          <span className="text-5xl font-black text-white drop-shadow-md">
@@ -364,10 +360,10 @@ export function ActiveCoinflipGame({
             </div>
             
             <div className="text-center text-sm font-medium h-6 text-yellow-600">
-               {flipping ? t("game_room.coinflip.flipping") : ""}
+               {flipping || game.status === 'playing' ? t("game_room.coinflip.flipping") : ""}
             </div>
 
-            {game.status === "active" && !game.result && (
+            {isGameActive && !game.result && (
                 <div className="space-y-4">
                     {waitingForOpponent ? (
                         <div className="text-center p-6 bg-stone-100 dark:bg-stone-900 rounded-lg animate-pulse border-2 border-dashed">
@@ -388,11 +384,14 @@ export function ActiveCoinflipGame({
                                     className="h-28 text-2xl font-bold border-2 border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-900 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 hover:border-yellow-500 transition-all text-stone-800 dark:text-stone-200" 
                                     variant="outline"
                                     onClick={() => handleChoice("heads")}
-                                    disabled={loading || waitingForAccept || waitingForMeToAccept}
+                                    // Bloquear si el OPONENTE ya eligió HEADS
+                                    disabled={loading || waitingForAccept || waitingForMeToAccept || hasProposedBet || opponentChoice === 'heads'}
                                 >
                                     <div className="flex flex-col items-center gap-2">
                                         <span>{t("game_room.coinflip.heads").toUpperCase()}</span>
                                         {actualMyChoice === 'heads' && <Check className="w-6 h-6 text-green-500" />}
+                                        {/* Mostrar candado si el oponente lo tomó */}
+                                        {opponentChoice === 'heads' && <Lock className="w-4 h-4 text-red-400" />}
                                     </div>
                                 </Button>
                                 <Button 
@@ -400,11 +399,14 @@ export function ActiveCoinflipGame({
                                     className="h-28 text-2xl font-bold border-2 border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-900 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 hover:border-yellow-500 transition-all text-stone-800 dark:text-stone-200" 
                                     variant="outline"
                                     onClick={() => handleChoice("tails")}
-                                    disabled={loading || waitingForAccept || waitingForMeToAccept}
+                                    // Bloquear si el OPONENTE ya eligió TAILS
+                                    disabled={loading || waitingForAccept || waitingForMeToAccept || hasProposedBet || opponentChoice === 'tails'}
                                 >
                                     <div className="flex flex-col items-center gap-2">
                                         <span>{t("game_room.coinflip.tails").toUpperCase()}</span>
                                         {actualMyChoice === 'tails' && <Check className="w-6 h-6 text-green-500" />}
+                                        {/* Mostrar candado si el oponente lo tomó */}
+                                        {opponentChoice === 'tails' && <Lock className="w-4 h-4 text-red-400" />}
                                     </div>
                                 </Button>
                              </div>
