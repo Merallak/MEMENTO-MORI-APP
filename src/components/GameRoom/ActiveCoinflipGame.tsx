@@ -17,7 +17,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { GameService, type CoinflipGame } from "@/services/gameService";
-import { LogOut, RotateCcw, Trophy, Coins, Check, AlertTriangle, Lock } from "lucide-react"; // Añadido Lock icon
+import { LogOut, RotateCcw, Trophy, Coins, Check, AlertTriangle, Lock } from "lucide-react";
 import { motion } from "framer-motion";
 
 type ExtendedCoinflipGame = CoinflipGame & {
@@ -250,7 +250,6 @@ export function ActiveCoinflipGame({
   };
 
   const myChoice = isHost ? game.host_choice : game.guest_choice;
-  // LÓGICA NUEVA: Identificar qué eligió el oponente
   const opponentChoice = isHost ? game.guest_choice : game.host_choice;
   
   const actualMyChoice = myChoice; 
@@ -274,11 +273,34 @@ export function ActiveCoinflipGame({
                          <AlertTriangle className="w-4 h-4" />
                          <span>{t("game_room.active_game.opponent_proposed", { amount: game.next_bet_amount || 0 })}</span>
                     </div>
+                    
+                    <Button onClick={handleAcceptBet} disabled={loading} className="w-full bg-green-600 hover:bg-green-700 text-white">
+                        <Check className="w-4 h-4 mr-2" />
+                        {t("game_room.active_game.accept_button")}
+                    </Button>
+                    
+                    {/* CAMBIO AQUI: Separador y opción de Contraoferta */}
+                    <div className="relative flex py-1 items-center">
+                        <div className="flex-grow border-t border-stone-200 dark:border-stone-700"></div>
+                        <span className="flex-shrink-0 mx-2 text-xs text-muted-foreground">{t("common.or")}</span>
+                        <div className="flex-grow border-t border-stone-200 dark:border-stone-700"></div>
+                    </div>
+
                     <div className="flex gap-2">
-                         <Button onClick={handleAcceptBet} disabled={loading} className="w-full bg-green-600 hover:bg-green-700 text-white">
-                             <Check className="w-4 h-4 mr-2" />
-                             {t("common.accept")}
-                         </Button>
+                         <Input 
+                            type="number" 
+                            placeholder={t("game_room.active_game.counter_placeholder")}
+                            value={betAmount} 
+                            onChange={(e) => setBetAmount(e.target.value)}
+                            className="bg-background"
+                        />
+                        <Button 
+                            variant="secondary" 
+                            onClick={handleProposeBet}
+                            disabled={isProposing || !betAmount}
+                        >
+                            {isProposing ? t("common.loading") : t("game_room.active_game.counter_button")}
+                        </Button>
                     </div>
                  </div>
             ) : waitingForAccept ? (
@@ -384,13 +406,11 @@ export function ActiveCoinflipGame({
                                     className="h-28 text-2xl font-bold border-2 border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-900 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 hover:border-yellow-500 transition-all text-stone-800 dark:text-stone-200" 
                                     variant="outline"
                                     onClick={() => handleChoice("heads")}
-                                    // Bloquear si el OPONENTE ya eligió HEADS
                                     disabled={loading || waitingForAccept || waitingForMeToAccept || hasProposedBet || opponentChoice === 'heads'}
                                 >
                                     <div className="flex flex-col items-center gap-2">
                                         <span>{t("game_room.coinflip.heads").toUpperCase()}</span>
                                         {actualMyChoice === 'heads' && <Check className="w-6 h-6 text-green-500" />}
-                                        {/* Mostrar candado si el oponente lo tomó */}
                                         {opponentChoice === 'heads' && <Lock className="w-4 h-4 text-red-400" />}
                                     </div>
                                 </Button>
@@ -399,13 +419,11 @@ export function ActiveCoinflipGame({
                                     className="h-28 text-2xl font-bold border-2 border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-900 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 hover:border-yellow-500 transition-all text-stone-800 dark:text-stone-200" 
                                     variant="outline"
                                     onClick={() => handleChoice("tails")}
-                                    // Bloquear si el OPONENTE ya eligió TAILS
                                     disabled={loading || waitingForAccept || waitingForMeToAccept || hasProposedBet || opponentChoice === 'tails'}
                                 >
                                     <div className="flex flex-col items-center gap-2">
                                         <span>{t("game_room.coinflip.tails").toUpperCase()}</span>
                                         {actualMyChoice === 'tails' && <Check className="w-6 h-6 text-green-500" />}
-                                        {/* Mostrar candado si el oponente lo tomó */}
                                         {opponentChoice === 'tails' && <Lock className="w-4 h-4 text-red-400" />}
                                     </div>
                                 </Button>
