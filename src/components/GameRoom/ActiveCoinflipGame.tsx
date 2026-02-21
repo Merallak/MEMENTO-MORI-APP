@@ -62,7 +62,8 @@ export function ActiveCoinflipGame({
     const channel = GameService.subscribeToCoinflipGame(initialGame.id, (updatedGame) => {
       setGame((prev) => ({ ...prev, ...updatedGame })); 
       
-      if (updatedGame.status === "finished" && updatedGame.result) {
+      // Detener animación local inmediatamente si hay resultado
+      if (updatedGame.result) {
         setFlipping(false);
       }
       if (updatedGame.status === "cancelled") onGameEnd();
@@ -158,6 +159,7 @@ export function ActiveCoinflipGame({
     }
 
     setLoading(true);
+    setFlipping(true);
 
     const { success, error } = await GameService.submitCoinflipChoice(game.id, choice);
     
@@ -206,7 +208,8 @@ export function ActiveCoinflipGame({
   };
 
   const renderResult = () => {
-    if (game.status !== "finished") return null;
+    // CAMBIO AQUI: Mostrar resultado si game.result existe, aunque status no sea finished aún
+    if (!game.result) return null;
 
     const iWon = game.winner_id === user?.id;
     const resultText = iWon ? t("game_room.results.winner") : t("game_room.results.loser");
@@ -232,19 +235,22 @@ export function ActiveCoinflipGame({
           </div>
         )}
 
-        <div className="space-y-2 pt-4">
-          <Button onClick={handleRestart} disabled={loading} className="w-full">
-            <RotateCcw className="w-4 h-4 mr-2" />
-            {loading ? t("common.loading") : t("game_room.results.continue_playing")}
-          </Button>
-
-          <div className="flex gap-2">
-             <Button variant="outline" className="flex-1" onClick={onBackToLobby ?? onLeaveGame ?? onGameEnd}>
-              <LogOut className="w-4 h-4 mr-2" />
-              {t("game_room.actions.leave_game")}
+        {/* Solo mostrar opciones de reinicio si el juego ya terminó oficialmente */}
+        {game.status === "finished" && (
+            <div className="space-y-2 pt-4">
+            <Button onClick={handleRestart} disabled={loading} className="w-full">
+                <RotateCcw className="w-4 h-4 mr-2" />
+                {loading ? t("common.loading") : t("game_room.results.continue_playing")}
             </Button>
-          </div>
-        </div>
+
+            <div className="flex gap-2">
+                <Button variant="outline" className="flex-1" onClick={onBackToLobby ?? onLeaveGame ?? onGameEnd}>
+                <LogOut className="w-4 h-4 mr-2" />
+                {t("game_room.actions.leave_game")}
+                </Button>
+            </div>
+            </div>
+        )}
       </div>
     );
   };
@@ -279,7 +285,6 @@ export function ActiveCoinflipGame({
                         {t("game_room.active_game.accept_button")}
                     </Button>
                     
-                    {/* CAMBIO AQUI: Separador y opción de Contraoferta */}
                     <div className="relative flex py-1 items-center">
                         <div className="flex-grow border-t border-stone-200 dark:border-stone-700"></div>
                         <span className="flex-shrink-0 mx-2 text-xs text-muted-foreground">{t("common.or")}</span>
@@ -368,7 +373,8 @@ export function ActiveCoinflipGame({
                     className={cn(
                         "w-32 h-32 rounded-full border-4 border-yellow-500 bg-gradient-to-br from-yellow-300 to-yellow-600 shadow-xl flex items-center justify-center relative",
                     )}
-                    animate={flipping || (game.status === 'playing' && !game.result) ? { rotateY: 360 } : { rotateY: 0 }}
+                    // CAMBIO AQUI: Detener animación inmediatamente si hay resultado, aunque status sea playing
+                    animate={(flipping || game.status === 'playing') && !game.result ? { rotateY: 360 } : { rotateY: 0 }}
                     transition={{ duration: 0.5, repeat: Infinity, ease: "linear" }}
                 >
                      {game.result ? (
@@ -382,7 +388,8 @@ export function ActiveCoinflipGame({
             </div>
             
             <div className="text-center text-sm font-medium h-6 text-yellow-600">
-               {flipping || game.status === 'playing' ? t("game_room.coinflip.flipping") : ""}
+               {/* CAMBIO AQUI: Ocultar texto inmediatamente si hay resultado */}
+               {(flipping || game.status === 'playing') && !game.result ? t("game_room.coinflip.flipping") : ""}
             </div>
 
             {isGameActive && !game.result && (
