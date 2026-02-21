@@ -121,6 +121,7 @@ supabase/.temp/storage-version
 supabase/functions/chat-assistant/config.toml
 supabase/functions/chat-assistant/index.ts
 supabase/migrations/20240523120000_fix_coinflip_function.sql
+supabase/migrations/20250201120000_fix_coinflip_rls.sql
 supabase/migrations/20260125000000_create_notifications.sql
 tailwind.config.ts
 tree.txt
