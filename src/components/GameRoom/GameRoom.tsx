@@ -7,9 +7,9 @@ import {
 } from "@/services/gameService";
 import { useAuth } from "@/contexts/AuthContext";
 import { GameLobby } from "./GameLobby";
-import { ActiveGame } from "./ActiveGame";
+import { ActiveRPSGame } from "./ActiveRPSGame"; // CORREGIDO: Importar el nuevo archivo
 import { ActiveTTTGame } from "./ActiveTTTGame";
-import { ActiveCoinflipGame } from "./ActiveCoinflipGame"; // IMPORTANTE: Faltaba este import
+import { ActiveCoinflipGame } from "./ActiveCoinflipGame";
 import { Loader2 } from "lucide-react";
 
 type ActiveGameState =
@@ -76,7 +76,7 @@ export function GameRoom() {
     <div className="relative">
       {activeGame ? (
         activeGame.type === "rps" ? (
-          <ActiveGame
+          <ActiveRPSGame // CORREGIDO: Usar el nuevo componente
             game={activeGame.game}
             onGameEnd={() => {
               setActiveGame(null);
@@ -97,7 +97,7 @@ export function GameRoom() {
               setActiveGame(null);
             }}
           />
-        ) : activeGame.type === "coinflip" ? ( // LÓGICA AGREGADA AQUÍ
+        ) : activeGame.type === "coinflip" ? (
           <ActiveCoinflipGame
             game={activeGame.game}
             onGameEnd={() => {
