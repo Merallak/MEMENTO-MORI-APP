@@ -15,6 +15,8 @@ export const translations = {
       required: "All fields are required",
       not_available: "Not available",
       or: "or",
+      you: "You", // Added
+      accept: "Accept", // Added useful common key
     },
 
     brand: {
@@ -334,7 +336,7 @@ export const translations = {
       },
     },
 
-        amm: {
+    amm: {
       title: "AMM Exchange",
       subtitle: "Trade tokens with MMC using automated market maker",
       not_eligible_title: "Access Restricted",
@@ -470,6 +472,11 @@ export const translations = {
       rock: "Rock",
       paper: "Paper",
       scissors: "Scissors",
+      
+      // Added missing keys
+      guest: "Guest",
+      host: "Host",
+      selected: "Selected",
 
       coinflip: {
         heads: "Heads",
@@ -567,7 +574,8 @@ export const translations = {
       active_game: {
         bet_amount_mmc: "Bet (MMC)",
         bet_help: "Both players must agree on the bet before playing.",
-        propose_button: "Propose",
+        propose_button: "Propose", // Kept for backward compatibility
+        propose: "Propose", // Added for new component
         accept_button: "Accept",
         move_submitted: "Move submitted successfully",
         bet_proposed: "Bet proposed",
@@ -581,6 +589,10 @@ export const translations = {
         vs: "VS",
         counter_placeholder: "Your amount",
         counter_button: "Counter",
+        // Added missing keys
+        opponent_proposed: "Opponent proposed {{amount}} MMC",
+        waiting_confirm: "Waiting for opponent to accept",
+        bet_pending_error: "Resolve the bet proposal first",
       },      
       game_selector: {
           label: "Game",
@@ -604,9 +616,9 @@ export const translations = {
         copied_title: "Copied!",
         copied_desc: "Game code copied to clipboard",
       },
-    }, // IMPORTANT: this comma must exist before `mmc`
+    }, 
 
-        notifications: {
+    notifications: {
       title: "Notifications",
       mark_all_read: "Mark all read",
       empty: "No notifications yet",
@@ -645,6 +657,8 @@ export const translations = {
       required: "Todos los campos son requeridos",
       not_available: "No disponible",
       or: "o",
+      you: "Tú", // Added
+      accept: "Aceptar", // Added
     },
 
     brand: {
@@ -1104,6 +1118,11 @@ export const translations = {
       paper: "Papel",
       scissors: "Tijeras",
       
+      // Added missing keys
+      guest: "Invitado",
+      host: "Anfitrión",
+      selected: "Seleccionado",
+
       coinflip: {
         heads: "Cara",
         tails: "Cruz",
@@ -1200,7 +1219,8 @@ export const translations = {
       active_game: {
         bet_amount_mmc: "Apuesta (MMC)",
         bet_help: "Deben acordar la apuesta antes de jugar.",
-        propose_button: "Proponer",
+        propose_button: "Proponer", // Kept for backward compatibility
+        propose: "Proponer", // Added
         accept_button: "Aceptar",
         move_submitted: "Jugada enviada correctamente",
         bet_proposed: "Apuesta propuesta",
@@ -1214,6 +1234,10 @@ export const translations = {
         vs: "VS",
         counter_placeholder: "Tu monto",
         counter_button: "Contrapropuesta",
+        // Added missing keys
+        opponent_proposed: "Oponente propuso {{amount}} MMC",
+        waiting_confirm: "Esperando aceptación del rival",
+        bet_pending_error: "Resuelve la propuesta de apuesta primero",
       },
       game_selector: {
         label: "Juego",
@@ -1237,9 +1261,9 @@ export const translations = {
         copied_title: "¡Copiado!",
         copied_desc: "Código copiado al portapapeles",
       },
-    }, // IMPORTANT: this comma must exist before `mmc`
+    }, 
 
-        notifications: {
+    notifications: {
       title: "Notificaciones",
       mark_all_read: "Marcar todas leídas",
       empty: "No hay notificaciones aún",

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -22,8 +23,8 @@ import { TurnDecider } from "./TurnDecider";
 
 interface ActiveTTTGameProps {
   game: TTTGame & {
-    host?: { full_name: string; email: string };
-    guest?: { full_name: string; email: string };
+    host?: { full_name?: string | null; email?: string | null } | null;
+    guest?: { full_name?: string | null; email?: string | null } | null;
   };
   onGameEnd: () => void;
   onBackToLobby?: () => void;
@@ -32,7 +33,6 @@ interface ActiveTTTGameProps {
 
 // Función auxiliar segura para obtener el caracter
 function getCell(board: string, idx: number) {
-  // Aseguramos que el board tenga al menos longitud 9 rellenando con guiones bajos
   const safeBoard = (board || "").padEnd(9, "_");
   const ch = safeBoard[idx];
   return ch === "X" || ch === "O" ? ch : "_";
@@ -47,6 +47,7 @@ export function ActiveTTTGame({ game: initialGame, onGameEnd, onBackToLobby, onL
   const [mmcBalance, setMmcBalance] = useState<number | null>(null);
   const [tokenImages, setTokenImages] = useState<{ host: string | null; guest: string | null }>({ host: null, guest: null });
 
+  // Betting states
   const [newBet, setNewBet] = useState<number | "">("");
   const [counterBet, setCounterBet] = useState<number | "">("");
   const [isBetSubmitting, setIsBetSubmitting] = useState(false);
@@ -79,11 +80,9 @@ export function ActiveTTTGame({ game: initialGame, onGameEnd, onBackToLobby, onL
     };
   }, [initialGame.id, onGameEnd]);
 
-  // Balance Management (Consolidado en un solo efecto)
+  // Balance Management
   useEffect(() => {
     if (!user?.id) return;
-    
-    // Actualizar balance al montar y cuando termina el juego (para ver premios)
     const shouldUpdate = game.status === "active" || game.status === "finished";
     if (!shouldUpdate) return;
 
@@ -93,9 +92,7 @@ export function ActiveTTTGame({ game: initialGame, onGameEnd, onBackToLobby, onL
       if (!cancelled) setMmcBalance(bal);
     })();
 
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [user?.id, game.status]);
 
   // Fetch token images
@@ -120,7 +117,7 @@ export function ActiveTTTGame({ game: initialGame, onGameEnd, onBackToLobby, onL
   const isHost = user?.id === game.host_id;
   const isGuest = user?.id === game.guest_id;
 
-  // Turn Decider / Round Change Animation
+  // Turn Decider
   useEffect(() => {
     if (
       game.round_number > prevRoundRef.current &&
@@ -139,11 +136,11 @@ export function ActiveTTTGame({ game: initialGame, onGameEnd, onBackToLobby, onL
       setShowTurnDecider(true);
       prevRoundRef.current = game.round_number;
     }
-  }, [game.round_number, game.status, game.turn_player_id, game.host_id, initialGame.host?.full_name, initialGame.guest?.full_name, isHost, isGuest, t]);
+  }, [game.round_number, game.status, game.turn_player_id, isHost, isGuest, t, initialGame.host, initialGame.guest, game.host_id]);
 
   const mySymbol = isHost ? game.host_symbol : isGuest ? game.guest_symbol : null;
   const isMyTurn = !!user?.id && game.turn_player_id === user.id;
-  
+
   const getSymbolImage = (symbol: "X" | "O") => 
     symbol === game.host_symbol ? tokenImages.host : tokenImages.guest;
 
@@ -168,8 +165,6 @@ export function ActiveTTTGame({ game: initialGame, onGameEnd, onBackToLobby, onL
     if (!user) return;
     if (!isMyTurn) return;
     if (game.bet_amount == null) return;
-
-    // Validación segura
     if (getCell(board, cellIdx) !== "_") return;
 
     setLoading(true);
@@ -178,9 +173,7 @@ export function ActiveTTTGame({ game: initialGame, onGameEnd, onBackToLobby, onL
 
     if (!success) {
       toast({ title: t("common.error"), description: error || t("game_room.errors.move_failed"), variant: "destructive" });
-      return;
     }
-    // No toast on success to keep gameplay fast, unless desired
   };
 
   const handleRestart = async () => {
@@ -192,10 +185,8 @@ export function ActiveTTTGame({ game: initialGame, onGameEnd, onBackToLobby, onL
       toast({ title: t("common.error"), description: error, variant: "destructive" });
       return;
     }
-
     toast({ title: t("game_room.results.new_round"), description: t("game_room.results.continue_playing") });
     
-    // Force refresh to ensure UI is in sync immediately
     const { data } = await GameService.getTTTGame(game.id);
     if (data) setGame(data);
   };
@@ -231,13 +222,11 @@ export function ActiveTTTGame({ game: initialGame, onGameEnd, onBackToLobby, onL
       });
       return;
     }
-
     toast({ title: t("common.success"), description: t("game_room.active_game.bet_proposed") });
   };
 
   const handleAcceptNewBet = async () => {
     if (!user) return;
-
     setIsBetSubmitting(true);
     const { success, error } = await GameService.acceptNewTTTBet(game.id);
     setIsBetSubmitting(false);
@@ -250,7 +239,6 @@ export function ActiveTTTGame({ game: initialGame, onGameEnd, onBackToLobby, onL
       });
       return;
     }
-
     toast({ title: t("common.success"), description: t("game_room.active_game.bet_accepted") });
     setNewBet("");
   };
@@ -286,7 +274,6 @@ export function ActiveTTTGame({ game: initialGame, onGameEnd, onBackToLobby, onL
             <RotateCcw className="w-4 h-4 mr-2" />
             {loading ? t("common.loading") : t("game_room.results.continue_playing")}
           </Button>
-
           <div className="flex gap-2">
             <Button variant="outline" className="flex-1" onClick={onBackToLobby ?? onLeaveGame ?? onGameEnd}>
               <LogOut className="w-4 h-4 mr-2" />
@@ -298,7 +285,6 @@ export function ActiveTTTGame({ game: initialGame, onGameEnd, onBackToLobby, onL
     );
   };
 
-  // Safe visualization board
   const displayBoard = (game.board ?? "").padEnd(9, "_");
 
   return (
@@ -310,7 +296,7 @@ export function ActiveTTTGame({ game: initialGame, onGameEnd, onBackToLobby, onL
         />
       )}
 
-      <Card className="border-2">
+      <Card className="border-2 shadow-lg">
         <CardHeader className="text-center">
           <Badge variant={game.status === "active" ? "default" : "secondary"} className="mx-auto">
             {t(`game_room.game_status.${game.status}` as any)}
@@ -323,7 +309,7 @@ export function ActiveTTTGame({ game: initialGame, onGameEnd, onBackToLobby, onL
           <CardDescription>
             {mySymbol 
               ? ((isHost && tokenImages.host) || (isGuest && tokenImages.guest) 
-                  ? null 
+                  ? null // Si hay imagen, el avatar habla por sí mismo
                   : t("game_room.ttt.you_are", { symbol: mySymbol }))
               : t("game_room.waiting_opponent")}
           </CardDescription>
@@ -336,7 +322,7 @@ export function ActiveTTTGame({ game: initialGame, onGameEnd, onBackToLobby, onL
           </div>
 
           {(game.status === "active" || game.status === "playing") && !!mySymbol && (
-            <div className="text-sm font-medium">
+            <div className="text-lg font-bold mt-2 animate-pulse text-primary">
               {isMyTurn ? t("game_room.ttt.your_turn") : t("game_room.ttt.opponent_turn")}
             </div>
           )}
@@ -351,17 +337,17 @@ export function ActiveTTTGame({ game: initialGame, onGameEnd, onBackToLobby, onL
           ) : (
             <>
               {canNegotiateBetNow && (
-                <div className="rounded-xl border border-stone-200 dark:border-stone-800 p-4 space-y-3">
+                <div className="rounded-xl border border-stone-200 dark:border-stone-800 p-4 space-y-3 bg-stone-50 dark:bg-stone-900/50">
                   <div className="text-sm font-medium">{t("game_room.active_game.bet_amount_mmc")}</div>
 
                   {!hasPendingBetProposal ? (
                     <div className="flex items-center gap-2">
-                      <input
+                      <Input
                         type="number"
                         min={1}
                         value={newBet}
                         onChange={(e) => setNewBet(e.target.value === "" ? "" : Number(e.target.value))}
-                        className="w-28 rounded-md border px-2 py-1 text-sm bg-background text-foreground"
+                        className="w-28 bg-background"
                       />
                       <Button
                         variant="outline"
@@ -375,32 +361,28 @@ export function ActiveTTTGame({ game: initialGame, onGameEnd, onBackToLobby, onL
                   ) : (
                     <div className="rounded-lg border border-amber-500/60 bg-amber-500/10 p-3 text-sm space-y-2">
                       {iProposedBet ? (
-                        <p className="text-amber-200">
+                        <p className="text-amber-600 dark:text-amber-400">
                           {t("game_room.bet_change.pending_for_other", { amount: game.next_bet_amount })}
                         </p>
                       ) : (
                         <>
-                          <p className="text-amber-200">
+                          <p className="text-amber-600 dark:text-amber-400">
                             {t("game_room.bet_change.pending_for_you", { amount: game.next_bet_amount })}
                           </p>
                           <div className="flex flex-wrap items-center gap-2">
-                            <Button
-                              size="sm"
-                              onClick={handleAcceptNewBet}
-                              disabled={isBetSubmitting}
-                            >
+                            <Button size="sm" onClick={handleAcceptNewBet} disabled={isBetSubmitting}>
                               {isBetSubmitting ? t("common.loading") : t("game_room.active_game.accept_button")}
                             </Button>
 
                             <span className="text-muted-foreground text-xs">{t("common.or")}</span>
 
-                            <input
+                            <Input
                               type="number"
                               min={1}
                               placeholder={t("game_room.active_game.counter_placeholder")}
                               value={counterBet}
                               onChange={(e) => setCounterBet(e.target.value === "" ? "" : Number(e.target.value))}
-                              className="w-24 rounded-md border px-2 py-1 text-sm bg-background text-foreground"
+                              className="w-24 bg-background"
                             />
                             <Button
                               size="sm"
@@ -420,12 +402,11 @@ export function ActiveTTTGame({ game: initialGame, onGameEnd, onBackToLobby, onL
                       )}
                     </div>
                   )}
-
                   <div className="text-xs text-muted-foreground">{t("game_room.active_game.bet_help")}</div>
                 </div>
               )}
 
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-3 gap-2 p-2 bg-stone-100 dark:bg-stone-800 rounded-xl">
                 {Array.from({ length: 9 }).map((_, idx) => {
                   const cell = getCell(displayBoard, idx);
                   const isActive = game.status === "active" || game.status === "playing";
@@ -448,22 +429,24 @@ export function ActiveTTTGame({ game: initialGame, onGameEnd, onBackToLobby, onL
                       disabled={disabled}
                       onClick={() => void handleCellClick(idx)}
                       className={cn(
-                        "aspect-square rounded-xl border text-4xl font-bold",
-                        "flex items-center justify-center",
-                        "transition-colors",
-                        disabled ? "opacity-70 cursor-not-allowed" : "hover:bg-stone-100 dark:hover:bg-stone-900 cursor-pointer"
+                        "aspect-square rounded-lg border-2 text-5xl font-bold shadow-sm",
+                        "flex items-center justify-center relative overflow-hidden",
+                        "transition-all duration-200",
+                        cell === "_" 
+                            ? (disabled ? "bg-stone-200 dark:bg-stone-900 border-stone-300 dark:border-stone-800" : "bg-white dark:bg-stone-950 border-stone-200 dark:border-stone-700 hover:bg-stone-50")
+                            : "bg-white dark:bg-stone-950 border-primary/50"
                       )}
                     >
-                      {cell === "_" ? "" : (
+                      {cell === "_" ? null : (
                         tokenImg ? (
-                          <div className="w-3/4 h-3/4 rounded-full overflow-hidden">
-                            <img 
-                              src={tokenImg} 
-                              alt={cell}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                        ) : cell
+                          <img 
+                            src={tokenImg} 
+                            alt={cell}
+                            className="w-full h-full object-cover animate-in zoom-in duration-300"
+                          />
+                        ) : (
+                          <span className="animate-in zoom-in duration-300 text-foreground">{cell}</span>
+                        )
                       )}
                     </button>
                   );
@@ -494,7 +477,7 @@ export function ActiveTTTGame({ game: initialGame, onGameEnd, onBackToLobby, onL
                 <Button variant="outline" onClick={() => setLeaveOpen(false)} disabled={loading}>
                   {t("common.cancel")}
                 </Button>
-                <Button onClick={handleLeaveConfirmed} disabled={loading}>
+                <Button onClick={handleLeaveConfirmed} disabled={loading} variant="destructive">
                   {loading ? t("common.loading") : t("common.confirm")}
                 </Button>
               </DialogFooter>

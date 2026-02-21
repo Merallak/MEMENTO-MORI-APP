@@ -17,11 +17,10 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { GameService, type CoinflipGame } from "@/services/gameService";
-import { LogOut, RotateCcw, Trophy, Coins, Check, AlertTriangle, Loader2 } from "lucide-react";
+import { LogOut, RotateCcw, Trophy, Coins, Check, AlertTriangle } from "lucide-react";
 import { motion } from "framer-motion";
 
 // Extendemos el tipo localmente ya que database.types.ts está desactualizado
-// pero CONFIRMAMOS que las columnas existen en la DB.
 type ExtendedCoinflipGame = CoinflipGame & {
   next_bet_amount?: number | null;
   next_bet_proposer_id?: string | null;
@@ -121,7 +120,6 @@ export function ActiveCoinflipGame({
     }
 
     setIsProposing(true);
-    // Llamada segura ya que verificamos que la función existe
     const { success, error } = await GameService.proposeNewCoinflipBet(game.id, amount);
     setIsProposing(false);
 
@@ -158,7 +156,6 @@ export function ActiveCoinflipGame({
   const handleChoice = async (choice: "heads" | "tails") => {
     if (!user) return;
     
-    // Prevenir movimiento si hay apuesta pendiente
     if (hasProposedBet) {
         toast({
             title: t("common.error"),
@@ -260,14 +257,11 @@ export function ActiveCoinflipGame({
     );
   };
 
-  // Determinar elecciones
   const myChoice = isHost ? game.host_choice : game.guest_choice;
   const actualMyChoice = myChoice; 
   const waitingForOpponent = actualMyChoice && !game.result && game.status === "active";
 
-  // --- UI de Apuestas ---
   const renderBetting = () => {
-      // Solo mostrar apuestas si estamos waiting o active, Y NO estamos jugando ya (moneda en aire o elegida)
       if (game.status !== 'waiting' && game.status !== 'active') return null;
       if (waitingForOpponent || game.result) return null; 
 
@@ -282,7 +276,7 @@ export function ActiveCoinflipGame({
                  <div className="space-y-3">
                     <div className="flex items-center gap-2 text-sm text-yellow-600 dark:text-yellow-400 bg-yellow-500/10 p-2 rounded">
                          <AlertTriangle className="w-4 h-4" />
-                         <span>{t("game_room.active_game.opponent_proposed", { amount: game.next_bet_amount })}</span>
+                         <span>{t("game_room.active_game.opponent_proposed", { amount: game.next_bet_amount || 0 })}</span>
                     </div>
                     <div className="flex gap-2">
                          <Button onClick={handleAcceptBet} disabled={loading} className="w-full bg-green-600 hover:bg-green-700 text-white">
@@ -301,7 +295,7 @@ export function ActiveCoinflipGame({
                     <div className="flex gap-2">
                         <Input 
                             type="number" 
-                            placeholder="0" 
+                            placeholder={t("game_room.active_game.counter_placeholder")}
                             value={betAmount} 
                             onChange={(e) => setBetAmount(e.target.value)}
                             className="bg-background"
@@ -311,7 +305,7 @@ export function ActiveCoinflipGame({
                             onClick={handleProposeBet}
                             disabled={isProposing || !betAmount}
                         >
-                            {isProposing ? "..." : t("game_room.active_game.propose")}
+                            {isProposing ? t("common.loading") : t("game_room.active_game.propose")}
                         </Button>
                     </div>
                     <p className="text-xs text-muted-foreground">
@@ -349,10 +343,8 @@ export function ActiveCoinflipGame({
 
         <CardContent className="space-y-6">
             
-            {/* UI de Apuestas */}
             {renderBetting()}
 
-            {/* Coin Animation */}
             <div className="flex justify-center py-6">
                  <motion.div 
                     className={cn(
@@ -375,7 +367,6 @@ export function ActiveCoinflipGame({
                {flipping ? t("game_room.coinflip.flipping") : ""}
             </div>
 
-            {/* Game Controls */}
             {game.status === "active" && !game.result && (
                 <div className="space-y-4">
                     {waitingForOpponent ? (
@@ -400,7 +391,7 @@ export function ActiveCoinflipGame({
                                     disabled={loading || waitingForAccept || waitingForMeToAccept}
                                 >
                                     <div className="flex flex-col items-center gap-2">
-                                        <span>HEADS</span>
+                                        <span>{t("game_room.coinflip.heads").toUpperCase()}</span>
                                         {actualMyChoice === 'heads' && <Check className="w-6 h-6 text-green-500" />}
                                     </div>
                                 </Button>
@@ -412,7 +403,7 @@ export function ActiveCoinflipGame({
                                     disabled={loading || waitingForAccept || waitingForMeToAccept}
                                 >
                                     <div className="flex flex-col items-center gap-2">
-                                        <span>TAILS</span>
+                                        <span>{t("game_room.coinflip.tails").toUpperCase()}</span>
                                         {actualMyChoice === 'tails' && <Check className="w-6 h-6 text-green-500" />}
                                     </div>
                                 </Button>
