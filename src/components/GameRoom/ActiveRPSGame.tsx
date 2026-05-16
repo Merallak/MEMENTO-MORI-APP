@@ -22,7 +22,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2, Scissors, Scroll, Trophy, RotateCcw, LogOut, Banknote, Coins } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { motion, AnimatePresence, useAnimation } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 interface ExtendedRPSGame extends RPSGame {
@@ -434,10 +434,10 @@ export function ActiveRPSGame({
                         "relative border-2 transition-all duration-500",
                         game.status === "finished" && (
                             isDraw 
-                                ? "border-yellow-500/50 bg-yellow-50/50 dark:border-yellow-400/30 dark:bg-yellow-950/20"
+                                ? "border-yellow-500/50 bg-yellow-500/10 dark:border-yellow-400/30 dark:bg-yellow-950/20"
                                 : iWon 
-                                    ? "border-green-500/50 bg-green-50/50 dark:border-green-400/30 dark:bg-green-950/20"
-                                    : "border-red-500/50 bg-red-50/50 dark:border-red-400/30 dark:bg-red-950/20"
+                                    ? "border-green-500/50 bg-green-500/10 dark:border-green-400/30 dark:bg-green-950/20"
+                                    : "border-red-500/50 bg-red-500/10 dark:border-red-400/30 dark:bg-red-950/20"
                         ),
                         (game.status === "playing" || game.status === "active") &&
                         "border-yellow-500/50 bg-yellow-50/50 dark:border-yellow-400/30 dark:bg-yellow-950/20",

@@ -291,73 +291,83 @@ export function ActiveTTTGame({ game: initialGame, onGameEnd, onBackToLobby, onL
     }
 
     return (
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className={cn(
           "mt-6 rounded-xl border p-6 text-center space-y-3 relative overflow-hidden",
-          isDraw 
-            ? "bg-yellow-500/10 border-yellow-500/50" 
-            : (iWon ? "bg-green-500/20 border-green-500/50" : "bg-red-500/20 border-red-500/50")
+          iWon ? "bg-green-600/20 border-green-500/50" : 
+          isDraw ? "bg-yellow-500/10 border-yellow-500/50" : 
+          "bg-red-600/20 border-red-500/50"
         )}
       >
-        {/* Partículas de fondo */}
-        <div className="absolute inset-0 pointer-events-none">
-          {iWon && Array.from({ length: 15 }).map((_, i) => (
+        {/* Particle Layer */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          {iWon && Array.from({ length: 20 }).map((_, i) => (
             <motion.div
-              key={i}
+              key={`win-coin-${i}`}
               initial={{ y: -20, x: `${Math.random() * 100}%`, opacity: 0 }}
-              animate={{ y: "110%", opacity: [0, 1, 1, 0], rotate: 360 }}
-              transition={{ duration: 2.5, repeat: Infinity, delay: Math.random() * 4 }}
+              animate={{ y: "120%", opacity: [0, 1, 1, 0], rotate: 360 }}
+              transition={{ duration: Math.random() * 2 + 2, repeat: Infinity, delay: Math.random() * 5 }}
               className="absolute"
             >
-              <Coins className="text-yellow-400 w-5 h-5" />
+              <Coins className="text-yellow-400 fill-yellow-400/20 w-5 h-5 shadow-lg shadow-yellow-500/50" />
             </motion.div>
           ))}
-          {!iWon && !isDraw && Array.from({ length: 10 }).map((_, i) => (
+          {!iWon && !isDraw && Array.from({ length: 12 }).map((_, i) => (
             <motion.div
-              key={i}
-              initial={{ y: "100%", x: `${Math.random() * 100}%`, opacity: 0 }}
-              animate={{ y: -50, opacity: [0, 1, 0], rotate: [0, 10, -10, 0] }}
-              transition={{ duration: 3, repeat: Infinity, delay: Math.random() * 2 }}
+              key={`loss-cash-${i}`}
+              initial={{ y: "110%", x: `${Math.random() * 100}%`, opacity: 0 }}
+              animate={{ y: -100, x: `${(Math.random() - 0.5) * 40 + 50}%`, opacity: [0, 1, 0], rotate: [0, 15, -15, 0] }}
+              transition={{ duration: Math.random() * 3 + 2, repeat: Infinity, delay: Math.random() * 3 }}
               className="absolute"
             >
-              <Banknote className="text-red-400 w-6 h-6" />
+              <div className="relative">
+                <Banknote className="text-red-400 w-8 h-8" />
+                <motion.div 
+                  animate={{ rotate: [0, 20, -20, 0] }} 
+                  transition={{ repeat: Infinity, duration: 0.5 }}
+                  className="absolute -top-1 -left-2 text-[10px]"
+                >🕊️</motion.div>
+              </div>
             </motion.div>
           ))}
         </div>
 
         <div className="relative z-10">
-        {isDraw || iWon ? (
-          <Trophy className={cn("w-12 h-12 mx-auto", isDraw ? "text-yellow-400" : "text-yellow-400 drop-shadow-md")} />
-        ) : (
-          <motion.div
-            animate={{ y: [0, -15, 0], rotate: [0, 10, -10, 0] }}
-            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-          >
-            <Banknote className="w-12 h-12 mx-auto text-red-400" />
-          </motion.div>
-        )}
-        <div className="text-2xl font-bold">
-          {isDraw ? t("game_room.draw") : (iWon ? t("game_room.results.winner") : t("game_room.results.loser"))}
-        </div>
-        <div className="text-xl font-semibold">{winnerName}</div>
-        <div className="text-muted-foreground">
-          {t("game_room.results.prize")}: {betDisplay} {t("mmc.short")}
-        </div>
+          {iWon ? (
+             <Trophy className="w-12 h-12 mx-auto mb-2 text-yellow-400 shadow-xl" />
+          ) : isDraw ? (
+             <Trophy className="w-12 h-12 mx-auto mb-2 text-yellow-600/50" />
+          ) : (
+             <motion.div
+               animate={{ y: [0, -20, 0], rotate: [0, 10, -10, 0], scale: [1, 1.1, 1] }}
+               transition={{ duration: 3, repeat: Infinity }}
+             >
+               <Banknote className="w-12 h-12 mx-auto text-red-400 mb-2" />
+             </motion.div>
+          )}
 
-        <div className="space-y-2 pt-2">
-          <Button onClick={handleRestart} disabled={loading} className="w-full">
-            <RotateCcw className="w-4 h-4 mr-2" />
-            {loading ? t("common.loading") : t("game_room.results.continue_playing")}
-          </Button>
-          <div className="flex gap-2">
-            <Button variant="outline" className="flex-1" onClick={onBackToLobby ?? onLeaveGame ?? onGameEnd}>
-              <LogOut className="w-4 h-4 mr-2" />
-              {t("game_room.actions.leave_game")}
-            </Button>
+          <div className="text-2xl font-bold">
+            {isDraw ? t("game_room.draw") : (iWon ? t("game_room.results.winner") : t("game_room.results.loser"))}
           </div>
-        </div>
+          <div className="text-xl font-semibold">{winnerName}</div>
+          <div className="text-muted-foreground font-medium">
+            {t("game_room.results.prize")}: <span className="text-yellow-500 font-bold">{betDisplay} {t("mmc.short")}</span>
+          </div>
+
+          <div className="space-y-2 pt-4">
+            <Button onClick={handleRestart} disabled={loading} className="w-full bg-primary hover:brightness-110">
+              <RotateCcw className="w-4 h-4 mr-2" />
+              {loading ? t("common.loading") : t("game_room.results.continue_playing")}
+            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" className="flex-1" onClick={onBackToLobby ?? onLeaveGame ?? onGameEnd}>
+                <LogOut className="w-4 h-4 mr-2" />
+                {t("game_room.actions.leave_game")}
+              </Button>
+            </div>
+          </div>
         </div>
       </motion.div>
     );
@@ -382,10 +392,10 @@ export function ActiveTTTGame({ game: initialGame, onGameEnd, onBackToLobby, onL
         "border-2 shadow-lg transition-all duration-500",
         game.status === "finished" && (
             isDraw 
-                ? "border-yellow-500/50 bg-yellow-50/50 dark:border-yellow-400/30 dark:bg-yellow-950/20"
+                ? "border-yellow-500/50 bg-yellow-500/10"
                 : iWon 
-                    ? "border-green-500/50 bg-green-50/50 dark:border-green-400/30 dark:bg-green-950/20"
-                    : "border-red-500/50 bg-red-50/50 dark:border-red-400/30 dark:bg-red-950/20"
+                    ? "border-green-500 bg-green-500/20 shadow-lg shadow-green-500/20"
+                    : "border-red-500 bg-red-500/20 shadow-lg shadow-red-500/20"
         )
       )}>
         <CardHeader className="text-center">
