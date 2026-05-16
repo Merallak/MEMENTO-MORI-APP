@@ -20,9 +20,9 @@ import {
 import { GameService, type GameMove, type RPSGame } from "@/services/gameService";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { Loader2, Scissors, Scroll, Trophy, RotateCcw, LogOut, Banknote } from "lucide-react";
+import { Loader2, Scissors, Scroll, Trophy, RotateCcw, LogOut, Banknote, Coins } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useAnimation } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 interface ExtendedRPSGame extends RPSGame {
@@ -298,32 +298,66 @@ export function ActiveRPSGame({
             <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="mt-8 text-center space-y-4 p-6 bg-stone-50 dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800"
+                className={cn(
+                    "mt-8 text-center space-y-4 p-6 rounded-xl border relative overflow-hidden",
+                    isDraw 
+                        ? "bg-yellow-500/10 border-yellow-500/50" 
+                        : iWon 
+                            ? "bg-green-500/20 border-green-500/50" 
+                            : "bg-red-500/20 border-red-500/50"
+                )}
             >
+                {/* Animación de Fondo */}
+                <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+                    {iWon && Array.from({ length: 20 }).map((_, i) => (
+                        <motion.div
+                            key={i}
+                            initial={{ y: -20, x: `${Math.random() * 100}%`, opacity: 0 }}
+                            animate={{ y: "120%", opacity: [0, 1, 1, 0], rotate: 360 }}
+                            transition={{ duration: Math.random() * 2 + 2, repeat: Infinity, delay: Math.random() * 5 }}
+                            className="absolute"
+                        >
+                            <Coins className="text-yellow-400 fill-yellow-400/20 w-6 h-6 drop-shadow-[0_0_8px_rgba(250,204,21,0.8)]" />
+                        </motion.div>
+                    ))}
+                    {!iWon && !isDraw && Array.from({ length: 12 }).map((_, i) => (
+                        <motion.div
+                            key={i}
+                            initial={{ y: "110%", x: `${Math.random() * 100}%`, opacity: 0 }}
+                            animate={{ y: -100, x: `${(Math.random() - 0.5) * 40 + 50}%`, opacity: [0, 1, 0], rotate: [0, 15, -15, 0] }}
+                            transition={{ duration: Math.random() * 3 + 2, repeat: Infinity, delay: Math.random() * 3 }}
+                            className="absolute"
+                        >
+                            <div className="relative">
+                                <Banknote className="text-red-400 w-8 h-8" />
+                                <motion.div 
+                                    animate={{ rotate: [0, 20, -20, 0] }} 
+                                    transition={{ repeat: Infinity, duration: 0.5 }}
+                                    className="absolute -top-1 -left-2 text-[10px]"
+                                >🕊️</motion.div>
+                            </div>
+                        </motion.div>
+                    ))}
+                </div>
+
                 <motion.div
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.5 }}
-                    className={cn(
-                        "text-center p-6 rounded-2xl",
-                        isDraw
-                            ? "bg-yellow-500/20 border-yellow-500/50"
-                            : iWon
-                                ? "bg-green-500/20 border-green-500/50"
-                                : "bg-red-500/20 border-red-500/50"
-                    )}
+                    className="text-center p-6 rounded-2xl relative z-10"
                 >
                     {isDraw || iWon ? (
                         <Trophy
                             className={cn(
                                 "w-16 h-16 mx-auto mb-4",
-                                isDraw ? "text-yellow-400" : "text-green-400"
+                                isDraw ? "text-yellow-400" : "text-yellow-400 drop-shadow-[0_0_10px_rgba(250,204,21,0.5)]"
                             )}
                         />
                     ) : (
                         <motion.div
-                            animate={{ y: [0, -15, 0], rotate: [0, 10, -10, 0] }}
-                            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                            animate={{ 
+                                y: [0, -20, 0], 
+                                rotate: [0, 5, -5, 0],
+                                scale: [1, 1.1, 1]
+                            }}
+                            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                         >
                             <Banknote className="w-16 h-16 mx-auto mb-4 text-red-400" />
                         </motion.div>

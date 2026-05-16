@@ -18,7 +18,7 @@ import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { DataService } from "@/lib/dataService";
 import { GameService, type TTTGame } from "@/services/gameService";
-import { Info, Loader2, LogOut, RotateCcw, Trophy, Banknote } from "lucide-react";
+import { Info, Loader2, LogOut, RotateCcw, Trophy, Banknote, Coins } from "lucide-react";
 import { motion } from "framer-motion";
 import { TurnDecider } from "./TurnDecider";
 
@@ -291,14 +291,45 @@ export function ActiveTTTGame({ game: initialGame, onGameEnd, onBackToLobby, onL
     }
 
     return (
-      <div className={cn(
-        "mt-6 rounded-xl border p-6 text-center space-y-3",
-        isDraw 
-          ? "bg-yellow-500/10 border-yellow-500/50" 
-          : (iWon ? "bg-green-500/10 border-green-500/50" : "bg-red-500/10 border-red-500/50")
-      )}>
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className={cn(
+          "mt-6 rounded-xl border p-6 text-center space-y-3 relative overflow-hidden",
+          isDraw 
+            ? "bg-yellow-500/10 border-yellow-500/50" 
+            : (iWon ? "bg-green-500/20 border-green-500/50" : "bg-red-500/20 border-red-500/50")
+        )}
+      >
+        {/* Partículas de fondo */}
+        <div className="absolute inset-0 pointer-events-none">
+          {iWon && Array.from({ length: 15 }).map((_, i) => (
+            <motion.div
+              key={i}
+              initial={{ y: -20, x: `${Math.random() * 100}%`, opacity: 0 }}
+              animate={{ y: "110%", opacity: [0, 1, 1, 0], rotate: 360 }}
+              transition={{ duration: 2.5, repeat: Infinity, delay: Math.random() * 4 }}
+              className="absolute"
+            >
+              <Coins className="text-yellow-400 w-5 h-5" />
+            </motion.div>
+          ))}
+          {!iWon && !isDraw && Array.from({ length: 10 }).map((_, i) => (
+            <motion.div
+              key={i}
+              initial={{ y: "100%", x: `${Math.random() * 100}%`, opacity: 0 }}
+              animate={{ y: -50, opacity: [0, 1, 0], rotate: [0, 10, -10, 0] }}
+              transition={{ duration: 3, repeat: Infinity, delay: Math.random() * 2 }}
+              className="absolute"
+            >
+              <Banknote className="text-red-400 w-6 h-6" />
+            </motion.div>
+          ))}
+        </div>
+
+        <div className="relative z-10">
         {isDraw || iWon ? (
-          <Trophy className={cn("w-12 h-12 mx-auto", isDraw ? "text-yellow-400" : "text-green-400")} />
+          <Trophy className={cn("w-12 h-12 mx-auto", isDraw ? "text-yellow-400" : "text-yellow-400 drop-shadow-md")} />
         ) : (
           <motion.div
             animate={{ y: [0, -15, 0], rotate: [0, 10, -10, 0] }}
@@ -327,7 +358,8 @@ export function ActiveTTTGame({ game: initialGame, onGameEnd, onBackToLobby, onL
             </Button>
           </div>
         </div>
-      </div>
+        </div>
+      </motion.div>
     );
   };
 

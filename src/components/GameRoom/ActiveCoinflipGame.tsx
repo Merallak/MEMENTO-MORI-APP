@@ -228,11 +228,37 @@ export function ActiveCoinflipGame({
 
     return (
       <div className={cn(
-        "mt-6 rounded-xl border p-6 text-center space-y-4",
-        iWon ? "bg-green-500/10 border-green-500/50" : "bg-red-500/10 border-red-500/50"
+        "mt-6 rounded-xl border p-6 text-center space-y-4 relative overflow-hidden",
+        iWon ? "bg-green-500/20 border-green-500/50" : "bg-red-500/20 border-red-500/50"
       )}>
+        {/* Animación de victoria/derrota */}
+        <div className="absolute inset-0 pointer-events-none">
+          {iWon ? (
+            Array.from({ length: 20 }).map((_, i) => (
+              <motion.div
+                key={i}
+                initial={{ y: -20, x: `${Math.random() * 100}%`, opacity: 0 }}
+                animate={{ y: "110%", opacity: [0, 1, 1, 0], rotate: 360 }}
+                transition={{ duration: 2, repeat: Infinity, delay: Math.random() * 3 }}
+                className="absolute"
+              ><Coins className="text-yellow-400 w-5 h-5 shadow-glow" /></motion.div>
+            ))
+          ) : (
+            Array.from({ length: 10 }).map((_, i) => (
+              <motion.div
+                key={i}
+                initial={{ y: "110%", x: `${Math.random() * 100}%`, opacity: 0 }}
+                animate={{ y: -100, opacity: [0, 1, 0] }}
+                transition={{ duration: 4, repeat: Infinity, delay: Math.random() * 2 }}
+                className="absolute"
+              ><Banknote className="text-red-400/40 w-8 h-8" /></motion.div>
+            ))
+          )}
+        </div>
+
+        <div className="relative z-10">
         {iWon ? (
-          <Trophy className="w-12 h-12 mx-auto text-green-400" />
+          <Trophy className="w-12 h-12 mx-auto text-yellow-400 drop-shadow-[0_0_10px_rgba(250,204,21,0.4)]" />
         ) : (
           <motion.div
             animate={{ y: [0, -15, 0], rotate: [0, 10, -10, 0] }}
