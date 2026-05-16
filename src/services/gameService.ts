@@ -459,7 +459,11 @@ export class GameService {
       return { success: false, error: "Invalid cell" };
     }
 
-    const { error } = await supabase.rpc("submit_ttt_move", { p_game_id: gameId, p_cell: cell, p_from_cell: fromCell });
+    const { error } = await supabase.rpc("submit_ttt_move", { 
+      p_game_id: gameId, 
+      p_cell: cell, 
+      p_from_cell: fromCell ?? null 
+    });
     if (error) return { success: false, error: error.message };
     return { success: true };
   }
