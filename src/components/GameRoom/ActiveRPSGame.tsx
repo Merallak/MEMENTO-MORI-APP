@@ -20,7 +20,7 @@ import {
 import { GameService, type GameMove, type RPSGame } from "@/services/gameService";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { Loader2, Scissors, Scroll, Trophy, RotateCcw, LogOut } from "lucide-react";
+import { Loader2, Scissors, Scroll, Trophy, RotateCcw, LogOut, Banknote } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -97,7 +97,7 @@ export function ActiveRPSGame({
     useEffect(() => {
         if (!user?.id) return;
         
-        const shouldUpdate = game.status === "active" || game.status === "finished"; 
+        const shouldUpdate = game.status === "active" || game.status === "finished" || game.bet_amount > 0; 
         if (!shouldUpdate) return;
 
         let cancelled = false;
@@ -108,7 +108,7 @@ export function ActiveRPSGame({
         loadBalance();
 
         return () => { cancelled = true; };
-    }, [user?.id, game.status]);
+    }, [user?.id, game.status, game.bet_amount, game.winner_id]);
 
     const handleMove = async (move: GameMove) => {
         if (!user) return;
@@ -210,11 +210,13 @@ export function ActiveRPSGame({
 
     const isHost = user?.id === game.host_id;
     const isGuest = user?.id === game.guest_id;
+    const iWon = !!user?.id && game.winner_id === user.id;
+    const isDraw = game.status === "finished" && !game.winner_id;
 
     const hasMoved = myMove !== null || (isHost ? !!game.host_move : !!game.guest_move);
     const opponentHasMoved = isHost ? !!game.guest_move : !!game.host_move;
 
-    const betNotSet = game.bet_amount == null;
+    const betNotSet = game.bet_amount == null || game.bet_amount === 0;
     const betDisplay = game.bet_amount == null ? "—" : game.bet_amount;
 
     const hasPendingBetProposal = game.next_bet_amount != null && game.next_bet_proposer_id != null;
@@ -304,22 +306,31 @@ export function ActiveRPSGame({
                     transition={{ duration: 0.5 }}
                     className={cn(
                         "text-center p-6 rounded-2xl",
-                        winner === "host"
-                            ? "bg-green-500/20 border-green-500/50"
-                            : winner === "guest"
-                                ? "bg-blue-500/20 border-blue-500/50"
-                                : "bg-yellow-500/20 border-yellow-500/50"
+                        isDraw
+                            ? "bg-yellow-500/20 border-yellow-500/50"
+                            : iWon
+                                ? "bg-green-500/20 border-green-500/50"
+                                : "bg-red-500/20 border-red-500/50"
                     )}
                 >
-                    <Trophy
-                        className={cn(
-                            "w-16 h-16 mx-auto mb-4",
-                            winner === "host" ? "text-green-400" : winner === "guest" ? "text-blue-400" : "text-yellow-400"
-                        )}
-                    />
+                    {isDraw || iWon ? (
+                        <Trophy
+                            className={cn(
+                                "w-16 h-16 mx-auto mb-4",
+                                isDraw ? "text-yellow-400" : "text-green-400"
+                            )}
+                        />
+                    ) : (
+                        <motion.div
+                            animate={{ y: [0, -15, 0], rotate: [0, 10, -10, 0] }}
+                            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                        >
+                            <Banknote className="w-16 h-16 mx-auto mb-4 text-red-400" />
+                        </motion.div>
+                    )}
 
                     <h3 className="text-2xl font-bold text-foreground mb-2">
-                        {isDraw ? t("game_room.draw") : t("game_room.results.winner")}
+                        {isDraw ? t("game_room.draw") : (iWon ? t("game_room.results.winner") : t("game_room.results.loser"))}
                     </h3>
 
                     <p className="text-3xl font-bold text-foreground mb-4">
@@ -387,8 +398,13 @@ export function ActiveRPSGame({
                 <Card
                     className={cn(
                         "relative border-2 transition-all duration-500",
-                        game.status === "finished" &&
-                        "border-green-500/50 bg-green-50/50 dark:border-green-400/30 dark:bg-green-950/20",
+                        game.status === "finished" && (
+                            isDraw 
+                                ? "border-yellow-500/50 bg-yellow-50/50 dark:border-yellow-400/30 dark:bg-yellow-950/20"
+                                : iWon 
+                                    ? "border-green-500/50 bg-green-50/50 dark:border-green-400/30 dark:bg-green-950/20"
+                                    : "border-red-500/50 bg-red-50/50 dark:border-red-400/30 dark:bg-red-950/20"
+                        ),
                         (game.status === "playing" || game.status === "active") &&
                         "border-yellow-500/50 bg-yellow-50/50 dark:border-yellow-400/30 dark:bg-yellow-950/20",
                         game.status === "waiting" &&

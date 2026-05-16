@@ -18,7 +18,8 @@ import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { DataService } from "@/lib/dataService";
 import { GameService, type TTTGame } from "@/services/gameService";
-import { Info, Loader2, LogOut, RotateCcw, Trophy } from "lucide-react";
+import { Info, Loader2, LogOut, RotateCcw, Trophy, Banknote } from "lucide-react";
+import { motion } from "framer-motion";
 import { TurnDecider } from "./TurnDecider";
 
 interface ActiveTTTGameProps {
@@ -94,7 +95,7 @@ export function ActiveTTTGame({ game: initialGame, onGameEnd, onBackToLobby, onL
     })();
 
     return () => { cancelled = true; };
-  }, [user?.id, game.status]);
+  }, [user?.id, game.status, game.bet_amount, game.winner_id]);
 
   // Fetch token images
   useEffect(() => {
@@ -278,6 +279,7 @@ export function ActiveTTTGame({ game: initialGame, onGameEnd, onBackToLobby, onL
     const guestName = initialGame.guest?.full_name || t("game_room.anonymous");
 
     const isDraw = !game.winner_id;
+    const iWon = !!user?.id && game.winner_id === user.id;
     let winnerName = "";
 
     if (isDraw) {
@@ -289,9 +291,25 @@ export function ActiveTTTGame({ game: initialGame, onGameEnd, onBackToLobby, onL
     }
 
     return (
-      <div className="mt-6 rounded-xl border border-stone-200 dark:border-stone-800 p-6 text-center space-y-3">
-        <Trophy className="w-12 h-12 mx-auto text-yellow-500" />
-        <div className="text-2xl font-bold">{isDraw ? t("game_room.draw") : t("game_room.results.winner")}</div>
+      <div className={cn(
+        "mt-6 rounded-xl border p-6 text-center space-y-3",
+        isDraw 
+          ? "bg-yellow-500/10 border-yellow-500/50" 
+          : (iWon ? "bg-green-500/10 border-green-500/50" : "bg-red-500/10 border-red-500/50")
+      )}>
+        {isDraw || iWon ? (
+          <Trophy className={cn("w-12 h-12 mx-auto", isDraw ? "text-yellow-400" : "text-green-400")} />
+        ) : (
+          <motion.div
+            animate={{ y: [0, -15, 0], rotate: [0, 10, -10, 0] }}
+            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <Banknote className="w-12 h-12 mx-auto text-red-400" />
+          </motion.div>
+        )}
+        <div className="text-2xl font-bold">
+          {isDraw ? t("game_room.draw") : (iWon ? t("game_room.results.winner") : t("game_room.results.loser"))}
+        </div>
         <div className="text-xl font-semibold">{winnerName}</div>
         <div className="text-muted-foreground">
           {t("game_room.results.prize")}: {betDisplay} {t("mmc.short")}
@@ -316,6 +334,9 @@ export function ActiveTTTGame({ game: initialGame, onGameEnd, onBackToLobby, onL
   const displayBoard = (game.board ?? "").padEnd(9, "_");
   const myPiecesCount = displayBoard.split("").filter((c) => c === mySymbol).length;
 
+  const isDraw = game.status === "finished" && !game.winner_id;
+  const iWon = !!user?.id && game.winner_id === user.id;
+
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       {showTurnDecider && (
@@ -325,7 +346,16 @@ export function ActiveTTTGame({ game: initialGame, onGameEnd, onBackToLobby, onL
         />
       )}
 
-      <Card className="border-2 shadow-lg">
+      <Card className={cn(
+        "border-2 shadow-lg transition-all duration-500",
+        game.status === "finished" && (
+            isDraw 
+                ? "border-yellow-500/50 bg-yellow-50/50 dark:border-yellow-400/30 dark:bg-yellow-950/20"
+                : iWon 
+                    ? "border-green-500/50 bg-green-50/50 dark:border-green-400/30 dark:bg-green-950/20"
+                    : "border-red-500/50 bg-red-50/50 dark:border-red-400/30 dark:bg-red-950/20"
+        )
+      )}>
         <CardHeader className="text-center">
           <Badge variant={game.status === "active" ? "default" : "secondary"} className="mx-auto">
             {t(`game_room.game_status.${game.status}` as any)}

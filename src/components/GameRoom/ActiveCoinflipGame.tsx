@@ -17,7 +17,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { GameService, type CoinflipGame } from "@/services/gameService";
-import { LogOut, RotateCcw, Trophy, Coins, Check, AlertTriangle, Lock } from "lucide-react";
+import { LogOut, RotateCcw, Trophy, Coins, Check, AlertTriangle, Lock, Banknote } from "lucide-react";
 import { motion } from "framer-motion";
 
 type ExtendedCoinflipGame = CoinflipGame & {
@@ -90,10 +90,11 @@ export function ActiveCoinflipGame({
     return () => {
       cancelled = true;
     };
-  }, [user?.id, game.status, game.bet_amount]); 
+  }, [user?.id, game.status, game.bet_amount, game.winner_id]); 
 
   const isHost = user?.id === game.host_id;
   const currentBet = game.bet_amount ?? 0;
+  const iWon = !!user?.id && game.winner_id === user.id;
   
   const hasProposedBet = game.next_bet_amount != null && game.next_bet_amount > 0;
   const iAmProposer = game.next_bet_proposer_id === user?.id;
@@ -149,6 +150,15 @@ export function ActiveCoinflipGame({
   const handleChoice = async (choice: "heads" | "tails") => {
     if (!user) return;
     
+    if (currentBet <= 0) {
+        toast({
+            title: t("common.error"),
+            description: t("game_room.active_game.bet_help"),
+            variant: "destructive"
+        });
+        return;
+    }
+
     if (hasProposedBet) {
         toast({
             title: t("common.error"),
@@ -217,8 +227,20 @@ export function ActiveCoinflipGame({
     const isHeads = game.result === "heads";
 
     return (
-      <div className="mt-6 rounded-xl border border-stone-200 dark:border-stone-800 p-6 text-center space-y-4 bg-stone-50/50 dark:bg-stone-900/50">
-        <Trophy className={cn("w-12 h-12 mx-auto", iWon ? "text-yellow-500" : "text-stone-400")} />
+      <div className={cn(
+        "mt-6 rounded-xl border p-6 text-center space-y-4",
+        iWon ? "bg-green-500/10 border-green-500/50" : "bg-red-500/10 border-red-500/50"
+      )}>
+        {iWon ? (
+          <Trophy className="w-12 h-12 mx-auto text-green-400" />
+        ) : (
+          <motion.div
+            animate={{ y: [0, -15, 0], rotate: [0, 10, -10, 0] }}
+            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <Banknote className="w-12 h-12 mx-auto text-red-400" />
+          </motion.div>
+        )}
         
         <div className="space-y-1">
           <div className="text-sm text-muted-foreground uppercase tracking-wider">{t("game_room.result_label")}</div>
@@ -342,7 +364,14 @@ export function ActiveCoinflipGame({
 
   return (
     <div className="max-w-xl mx-auto space-y-6">
-      <Card className="border-2 shadow-lg transition-all duration-300">
+      <Card className={cn(
+        "border-2 shadow-lg transition-all duration-500",
+        game.status === "finished" && (
+            iWon 
+                ? "border-green-500/50 bg-green-50/50 dark:border-green-400/30 dark:bg-green-950/20"
+                : "border-red-500/50 bg-red-50/50 dark:border-red-400/30 dark:bg-red-950/20"
+        )
+      )}>
         <CardHeader className="text-center pb-2">
           <Badge variant={game.status === "active" ? "default" : "secondary"} className="mx-auto mb-2">
             {t(`game_room.game_status.${game.status}` as any)}
