@@ -454,12 +454,12 @@ export class GameService {
   return { success: true };
 }
 
-  static async submitTTTMove(gameId: string, cell: TTTCell): Promise<{ success: boolean; error?: string }> {
+  static async submitTTTMove(gameId: string, cell: TTTCell, fromCell?: number): Promise<{ success: boolean; error?: string }> {
     if (!Number.isInteger(cell) || cell < 0 || cell > 8) {
       return { success: false, error: "Invalid cell" };
     }
 
-    const { error } = await supabase.rpc("submit_ttt_move", { p_game_id: gameId, p_cell: cell });
+    const { error } = await supabase.rpc("submit_ttt_move", { p_game_id: gameId, p_cell: cell, p_from_cell: fromCell });
     if (error) return { success: false, error: error.message };
     return { success: true };
   }

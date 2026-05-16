@@ -46,6 +46,7 @@ export function ActiveTTTGame({ game: initialGame, onGameEnd, onBackToLobby, onL
   const [loading, setLoading] = useState(false);
   const [mmcBalance, setMmcBalance] = useState<number | null>(null);
   const [tokenImages, setTokenImages] = useState<{ host: string | null; guest: string | null }>({ host: null, guest: null });
+  const [selectedCell, setSelectedCell] = useState<number | null>(null);
 
   // Betting states
   const [newBet, setNewBet] = useState<number | "">("");
@@ -165,16 +166,43 @@ export function ActiveTTTGame({ game: initialGame, onGameEnd, onBackToLobby, onL
     if (!user) return;
     if (!isMyTurn) return;
     if (game.bet_amount == null) return;
-    if (getCell(board, cellIdx) !== "_") return;
 
-    setLoading(true);
-    const { success, error } = await GameService.submitTTTMove(game.id, cellIdx);
-    setLoading(false);
+    const cellContent = getCell(board, cellIdx);
+    const myPiecesCount = board.split("").filter((c) => c === mySymbol).length;
 
-    if (!success) {
-      toast({ title: t("common.error"), description: error || t("game_room.errors.move_failed"), variant: "destructive" });
+    // FASE 1: Colocación (menos de 3 fichas)
+    if (myPiecesCount < 3) {
+      if (cellContent !== "_") return;
+      setLoading(true);
+      const { success, error } = await GameService.submitTTTMove(game.id, cellIdx);
+      setLoading(false);
+      if (!success) {
+        toast({ title: t("common.error"), description: error || t("game_room.errors.move_failed"), variant: "destructive" });
+      }
+      return;
+    }
+
+    // FASE 2: Movimiento (ya tiene 3 fichas)
+    if (cellContent === mySymbol) {
+      // Seleccionar o deseleccionar ficha propia para mover
+      setSelectedCell(selectedCell === cellIdx ? null : cellIdx);
+      return;
+    }
+
+    if (selectedCell !== null && cellContent === "_") {
+      // Ejecutar movimiento de la ficha seleccionada a la casilla vacía
+      setLoading(true);
+      const { success, error } = await GameService.submitTTTMove(game.id, cellIdx, selectedCell);
+      setLoading(false);
+
+      if (success) {
+        setSelectedCell(null);
+      } else {
+        toast({ title: t("common.error"), description: error || t("game_room.errors.move_failed"), variant: "destructive" });
+      }
     }
   };
+
 
   const handleRestart = async () => {
     setLoading(true);
@@ -286,6 +314,7 @@ export function ActiveTTTGame({ game: initialGame, onGameEnd, onBackToLobby, onL
   };
 
   const displayBoard = (game.board ?? "").padEnd(9, "_");
+  const myPiecesCount = displayBoard.split("").filter((c) => c === mySymbol).length;
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
@@ -415,26 +444,30 @@ export function ActiveTTTGame({ game: initialGame, onGameEnd, onBackToLobby, onL
                     !isActive ||
                     game.bet_amount == null ||
                     !isMyTurn ||
-                    cell !== "_" ||
                     !(isHost || isGuest);
+                  
+                  // En fase de movimiento, las casillas ocupadas por el jugador NO están deshabilitadas (para que pueda seleccionarlas)
+                  const isInteractive = !disabled && (cell === "_" || cell === mySymbol);
 
                   const symbol = cell as "X" | "O" | "_";
                   const tokenImg = symbol !== "_" ? getSymbolImage(symbol) : null;
+                  const isSelected = selectedCell === idx;
 
                   return (
                     <button
                       key={idx}
                       type="button"
                       aria-label={t("game_room.ttt.cell_aria", { index: idx + 1 })}
-                      disabled={disabled}
+                      disabled={!isInteractive}
                       onClick={() => void handleCellClick(idx)}
                       className={cn(
                         "aspect-square rounded-lg border-2 text-5xl font-bold shadow-sm",
                         "flex items-center justify-center relative overflow-hidden",
                         "transition-all duration-200",
                         cell === "_" 
-                            ? (disabled ? "bg-stone-200 dark:bg-stone-900 border-stone-300 dark:border-stone-800" : "bg-white dark:bg-stone-950 border-stone-200 dark:border-stone-700 hover:bg-stone-50")
-                            : "bg-white dark:bg-stone-950 border-primary/50"
+                            ? (!isInteractive ? "bg-stone-200 dark:bg-stone-900 border-stone-300 dark:border-stone-800" : "bg-white dark:bg-stone-950 border-stone-200 dark:border-stone-700 hover:bg-stone-50")
+                            : "bg-white dark:bg-stone-950 border-primary/50",
+                        isSelected && "ring-4 ring-primary ring-offset-2 animate-pulse z-10"
                       )}
                     >
                       {cell === "_" ? null : (
