@@ -459,12 +459,16 @@ export class GameService {
       return { success: false, error: "Invalid cell" };
     }
 
-    const { error } = await supabase.rpc("submit_ttt_move", { 
+    const { data, error } = await supabase.rpc("submit_ttt_move" as any, { 
       p_game_id: gameId, 
       p_cell: cell, 
       p_from_cell: fromCell ?? null 
     });
     if (error) return { success: false, error: error.message };
+
+    const result = (Array.isArray(data) ? data[0] : data) as { success: boolean; error?: string } | null;
+    if (result && result.success === false) return { success: false, error: result.error };
+    
     return { success: true };
   }
 
@@ -600,9 +604,10 @@ export class GameService {
     const { data, error } = await supabase.rpc("propose_new_ttt_bet" as any, { p_game_id: gameId, p_new_bet: newBet });
     if (error) return { success: false, error: error.message };
 
-    const arr = (data ?? []) as { success: boolean; error?: string }[];
-    const first = arr[0] ?? { success: true };
-    if (!first.success) return { success: false, error: first.error };
+    const arr = (data ?? []) as any[];
+    const result = Array.isArray(arr) ? arr[0] : arr;
+    
+    if (result && result.success === false) return { success: false, error: result.error };
     return { success: true };
   }
 
@@ -610,9 +615,10 @@ export class GameService {
     const { data, error } = await supabase.rpc("accept_new_ttt_bet" as any, { p_game_id: gameId });
     if (error) return { success: false, error: error.message };
 
-    const arr = (data ?? []) as { success: boolean; error?: string }[];
-    const first = arr[0] ?? { success: true };
-    if (!first.success) return { success: false, error: first.error };
+    const arr = (data ?? []) as any[];
+    const result = Array.isArray(arr) ? arr[0] : arr;
+
+    if (result && result.success === false) return { success: false, error: result.error };
     return { success: true };
   }
 
@@ -653,24 +659,30 @@ export class GameService {
     gameId: string, 
     choice: "heads" | "tails"
   ): Promise<{ success: boolean; error?: string }> {
-    const { error } = await supabase.rpc("submit_coinflip_choice" as any, {
+    const { data, error } = await supabase.rpc("submit_coinflip_choice" as any, {
       p_game_id: gameId,
       p_choice: choice,
     });
-
     if (error) {
       console.error("Error submitting coinflip choice:", error);
       return { success: false, error: error.message };
     }
 
+    const result = (Array.isArray(data) ? data[0] : data) as { success: boolean; error?: string } | null;
+    if (result && result.success === false) return { success: false, error: result.error };
+
     return { success: true };
   }
 
   static async restartCoinflipGame(gameId: string): Promise<{ success: boolean; error?: string }> {
-    const { error } = await supabase.rpc("restart_coinflip_game" as any, { 
+    const { data, error } = await supabase.rpc("restart_coinflip_game" as any, { 
       p_game_id: gameId,
     });
     if (error) return { success: false, error: error.message };
+
+    const result = (Array.isArray(data) ? data[0] : data) as { success: boolean; error?: string } | null;
+    if (result && result.success === false) return { success: false, error: result.error };
+
     return { success: true };
   }
 
@@ -688,15 +700,11 @@ export class GameService {
       p_game_id: gameId,
       p_new_bet: newBet
     });
-
     if (error) return { success: false, error: error.message };
     
-    const arr = (data ?? []) as { success: boolean; error?: string }[];
-    const first = arr[0] ?? { success: true }; 
-    
-    if (arr.length > 0 && !first.success) {
-      return { success: false, error: first.error };
-    }
+    const result = (Array.isArray(data) ? data[0] : data) as { success: boolean; error?: string } | null;
+    if (result && result.success === false) return { success: false, error: result.error };
+
     return { success: true };
   }
 
@@ -704,15 +712,11 @@ export class GameService {
     const { data, error } = await supabase.rpc("accept_new_coinflip_bet" as any, {
       p_game_id: gameId
     });
-
     if (error) return { success: false, error: error.message };
 
-    const arr = (data ?? []) as { success: boolean; error?: string }[];
-    const first = arr[0] ?? { success: true };
-    
-    if (arr.length > 0 && !first.success) {
-      return { success: false, error: first.error };
-    }
+    const result = (Array.isArray(data) ? data[0] : data) as { success: boolean; error?: string } | null;
+    if (result && result.success === false) return { success: false, error: result.error };
+
     return { success: true };
   }
 }

@@ -606,8 +606,8 @@ export const translations = {
         opponent_turn: "Opponent's turn",
         you_are: "You are {{symbol}}",
         cell_aria: "Cell {{index}}",
-        rules_hint: "Max 3 pieces. Once you have 3 on board, select one to move it to an empty spot.",
-        move_prompt: "Your turn! Move one of your pieces.",
+        rules_hint: "Max 3 pieces. When you have 3, select one of yours to move it to an empty spot.",
+        move_prompt: "Move one of your pieces to an empty square.",
       },
       lobby_ui: {
         quick_match: "Quick Match",
@@ -1254,7 +1254,7 @@ export const translations = {
         you_are: "Eres {{symbol}}",
         cell_aria: "Casilla {{index}}",
         rules_hint: "Máximo 3 fichas. Cuando tengas 3, selecciona una propia para moverla a un espacio vacío.",
-        move_prompt: "¡Tu turno! Mueve una de tus fichas.",
+        move_prompt: "Mueve una de tus fichas a una casilla vacía.",
       },
       lobby_ui: {
         quick_match: "Partida rápida",

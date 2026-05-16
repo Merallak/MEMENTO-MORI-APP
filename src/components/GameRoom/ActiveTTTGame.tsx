@@ -18,7 +18,7 @@ import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { DataService } from "@/lib/dataService";
 import { GameService, type TTTGame } from "@/services/gameService";
-import { Loader2, LogOut, RotateCcw, Trophy } from "lucide-react";
+import { Info, Loader2, LogOut, RotateCcw, Trophy } from "lucide-react";
 import { TurnDecider } from "./TurnDecider";
 
 interface ActiveTTTGameProps {
@@ -145,8 +145,8 @@ export function ActiveTTTGame({ game: initialGame, onGameEnd, onBackToLobby, onL
   const getSymbolImage = (symbol: "X" | "O") => 
     symbol === game.host_symbol ? tokenImages.host : tokenImages.guest;
 
-  const betNotSet = game.bet_amount == null;
-  const betDisplay = game.bet_amount == null ? "—" : game.bet_amount;
+  const betNotSet = game.bet_amount == null || game.bet_amount === 0;
+  const betDisplay = betNotSet ? "—" : game.bet_amount;
 
   const hasPendingBetProposal = game.next_bet_amount != null && game.next_bet_proposer_id != null;
   const iProposedBet = hasPendingBetProposal && game.next_bet_proposer_id === user?.id;
@@ -165,7 +165,7 @@ export function ActiveTTTGame({ game: initialGame, onGameEnd, onBackToLobby, onL
   const handleCellClick = async (cellIdx: number) => {
     if (!user) return;
     if (!isMyTurn) return;
-    if (game.bet_amount == null) return;
+    if (betNotSet) return;
 
     const cellContent = getCell(board, cellIdx);
     const myPiecesCount = board.split("").filter((c) => c === mySymbol).length;
@@ -353,6 +353,11 @@ export function ActiveTTTGame({ game: initialGame, onGameEnd, onBackToLobby, onL
           {(game.status === "active" || game.status === "playing") && !!mySymbol && (
             <div className="text-lg font-bold mt-2 animate-pulse text-primary">
               {isMyTurn ? t("game_room.ttt.your_turn") : t("game_room.ttt.opponent_turn")}
+              {isMyTurn && myPiecesCount === 3 && (
+                <p className="text-xs font-medium text-muted-foreground animate-none mt-1">
+                  {t("game_room.ttt.move_prompt")}
+                </p>
+              )}
             </div>
           )}
         </CardHeader>
@@ -431,7 +436,10 @@ export function ActiveTTTGame({ game: initialGame, onGameEnd, onBackToLobby, onL
                       )}
                     </div>
                   )}
-                  <div className="text-xs text-muted-foreground">{t("game_room.active_game.bet_help")}</div>
+                  <div className="text-xs text-muted-foreground flex items-center gap-1.5">
+                    <Info className="w-3.5 h-3.5" />
+                    {t("game_room.active_game.bet_help")}
+                  </div>
                 </div>
               )}
 
@@ -442,7 +450,7 @@ export function ActiveTTTGame({ game: initialGame, onGameEnd, onBackToLobby, onL
                   const disabled =
                     loading ||
                     !isActive ||
-                    game.bet_amount == null ||
+                    betNotSet ||
                     !isMyTurn ||
                     !(isHost || isGuest);
                   
